@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AuraXL — Website Status</title>
+<meta name="description" content="Real-time uptime and availability monitoring dashboard for AuraXL.com" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ═══════════════════════════════════════════
+   Design tokens
+═══════════════════════════════════════════ */
+:root {
+  --teal:        #2BC0D4;
+  --teal-dark:   #0DB2A7;
+  --orange:      #F26727;
+  --green:       #22c55e;
+  --green-bg:    #f0fdf4;
+  --red:         #ef4444;
+  --red-bg:      #fef2f2;
+  --yellow:      #f59e0b;
+  --yellow-bg:   #fffbeb;
+  --grey:        #6b7280;
+  --grey-bg:     #f9fafb;
+  --text:        #111827;
+  --text-muted:  #6b7280;
+  --border:      #e5e7eb;
+  --surface:     #ffffff;
+  --bg:          #f3f4f6;
+  --radius:      12px;
+  --radius-sm:   8px;
+  --shadow:      0 1px 3px 0 rgb(0 0 0/.08), 0 1px 2px -1px rgb(0 0 0/.05);
+  --shadow-md:   0 4px 6px -1px rgb(0 0 0/.07), 0 2px 4px -2px rgb(0 0 0/.05);
+  --shadow-lg:   0 10px 15px -3px rgb(0 0 0/.07), 0 4px 6px -4px rgb(0 0 0/.04);
+  --font:        'Inter', system-ui, sans-serif;
+  --mono:        'JetBrains Mono', 'Fira Mono', monospace;
+  --transition:  150ms ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Layout ─────────────────────────────── */
+.page { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+
+/* ─── Header ─────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.75rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.header-brand { display: flex; align-items: center; gap: 0.6rem; }
+.header-logo {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #fff; font-size: 0.85rem; letter-spacing: -0.02em;
+}
+.header-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+.header-subtitle { font-size: 0.78rem; color: var(--text-muted); }
+
+.header-meta {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.header-url {
+  font-family: var(--mono); font-size: 0.75rem;
+  color: var(--teal-dark); font-weight: 500;
+}
+.refresh-btn {
+  display: flex; align-items: center; gap: 0.35rem;
+  padding: 0.35rem 0.75rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface);
+  font-size: 0.75rem; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; transition: all var(--transition);
+  font-family: var(--font);
+}
+.refresh-btn:hover { border-color: var(--teal); color: var(--teal); background: #f0fffe; }
+.refresh-btn svg { width: 13px; height: 13px; }
+
+/* ─── Hero status card ────────────────────── */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 640px) { .hero { grid-template-columns: 1fr; } }
+
+.status-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: box-shadow var(--transition);
+}
+.status-card.main {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
+}
+.status-card:hover { box-shadow: var(--shadow-md); }
+
+.status-indicator {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.9rem; border-radius: 999px;
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 0.03em;
+}
+.status-indicator.up    { background: var(--green-bg);  color: var(--green);  }
+.status-indicator.degraded { background: var(--yellow-bg); color: var(--yellow); }
+.status-indicator.down  { background: var(--red-bg);    color: var(--red);    }
+.status-indicator.unknown { background: var(--grey-bg); color: var(--grey);   }
+
+.pulse {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+.up .pulse    { background: var(--green);  box-shadow: 0 0 0 0 rgba(34,197,94,.4); }
+.degraded .pulse { background: var(--yellow); box-shadow: 0 0 0 0 rgba(245,158,11,.4); }
+.down .pulse  { background: var(--red);    box-shadow: 0 0 0 0 rgba(239,68,68,.4); animation: none; }
+.unknown .pulse { background: var(--grey); animation: none; }
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 currentColor; }
+  70%  { box-shadow: 0 0 0 6px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.hero-stat-label { font-size: 0.72rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.25rem; }
+.hero-stat-value { font-size: 1.6rem; font-weight: 700; color: var(--text); letter-spacing: -0.03em; line-height: 1; }
+.hero-stat-sub   { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+.hero-row { display: flex; flex-direction: column; gap: 0.2rem; }
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1.5rem; }
+.detail-item label { font-size: 0.7rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.15rem; }
+.detail-item .val  { font-size: 0.85rem; font-weight: 600; color: var(--text); font-family: var(--mono); }
+
+/* ─── Summary cards row ───────────────────── */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: box-shadow var(--transition);
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-label { font-size: 0.68rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.4rem; }
+.card-value { font-size: 1.3rem; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; }
+.card-sub   { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+.card-value.green  { color: var(--green); }
+.card-value.red    { color: var(--red); }
+.card-value.yellow { color: var(--yellow); }
+.card-value.teal   { color: var(--teal-dark); }
+
+/* ─── Window / stats trio ─────────────────── */
+.window-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 520px) { .window-stats { grid-template-columns: 1fr; } }
+.window-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--shadow);
+}
+.window-card h4 { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 0.6rem; }
+.uptime-pct { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; }
+.uptime-pct.green  { color: var(--green); }
+.uptime-pct.yellow { color: var(--yellow); }
+.uptime-pct.red    { color: var(--red); }
+.uptime-pct.grey   { color: var(--grey); }
+.window-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+/* ─── History table ───────────────────────── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0.75rem; gap: 0.5rem; flex-wrap: wrap;
+}
+.section-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+
+.filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.filter-btn {
+  padding: 0.25rem 0.65rem; border-radius: 6px; border: 1px solid var(--border);
+  font-size: 0.72rem; font-weight: 500; cursor: pointer; background: var(--surface);
+  color: var(--text-muted); font-family: var(--font); transition: all var(--transition);
+}
+.filter-btn:hover, .filter-btn.active { border-color: var(--teal); color: var(--teal); background: #f0fffe; }
+
+.table-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+}
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  background: #f8fafc; padding: 0.65rem 1rem;
+  text-align: left; font-size: 0.68rem; font-weight: 600;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+}
+tbody tr { border-bottom: 1px solid var(--border); transition: background var(--transition); }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f9fafb; }
+tbody td {
+  padding: 0.7rem 1rem; font-size: 0.8rem; color: var(--text);
+  vertical-align: middle;
+}
+.td-mono { font-family: var(--mono); font-size: 0.75rem; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.68rem;
+  font-weight: 600; letter-spacing: 0.02em;
+}
+.badge.up       { background: var(--green-bg);  color: var(--green); }
+.badge.degraded { background: var(--yellow-bg); color: var(--yellow); }
+.badge.down     { background: var(--red-bg);    color: var(--red); }
+
+.rt-bar {
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.rt-track {
+  flex: 1; height: 4px; background: var(--border); border-radius: 2px;
+  overflow: hidden; max-width: 80px;
+}
+.rt-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-dark));
+  transition: width 0.4s ease;
+}
+
+.error-text { color: var(--red); font-size: 0.73rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.no-data { padding: 2.5rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+
+/* ─── Pagination ──────────────────────────── */
+.pagination { display: flex; justify-content: flex-end; gap: 0.4rem; padding: 0.75rem 1rem; border-top: 1px solid var(--border); }
+.page-btn {
+  padding: 0.3rem 0.65rem; border-radius: 6px; border: 1px solid var(--border);
+  font-size: 0.75rem; font-weight: 500; cursor: pointer; background: var(--surface);
+  color: var(--text-muted); font-family: var(--font); transition: all var(--transition);
+}
+.page-btn:hover, .page-btn.active { border-color: var(--teal); color: var(--teal); background: #f0fffe; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Footer ──────────────────────────────── */
+.footer {
+  margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.72rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem;
+}
+.footer-note { font-family: var(--mono); }
+
+/* ─── Skeleton loader ─────────────────────── */
+.skel {
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px; display: inline-block;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ─── Responsive ──────────────────────────── */
+@media (max-width: 768px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  table th:nth-child(5), table td:nth-child(5) { display: none; }
+}
+@media (max-width: 480px) {
+  .cards { grid-template-columns: 1fr; }
+  table th:nth-child(4), table td:nth-child(4) { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-logo">AX</div>
+      <div>
+        <div class="header-title">AuraXL Status</div>
+        <div class="header-subtitle">Website Availability Monitor</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="header-url" id="target-url">https://auraxl.com</span>
+      <span id="last-refreshed">—</span>
+      <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Hero: current status ── -->
+  <div class="hero">
+    <!-- Status pill + response info -->
+    <div class="status-card main" id="hero-main">
+      <div>
+        <div style="margin-bottom:0.75rem">
+          <span class="status-indicator unknown" id="status-pill">
+            <span class="pulse"></span>
+            <span id="status-text">Loading…</span>
+          </span>
+        </div>
+        <div class="hero-row">
+          <div class="hero-stat-label">Website</div>
+          <div class="hero-stat-value" style="font-size:1.25rem;letter-spacing:-0.01em">AuraXL.com</div>
+          <div class="hero-stat-sub" id="hero-detail">Fetching latest data…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key metrics -->
+    <div class="status-card">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>HTTP Status</label>
+          <div class="val" id="d-http">—</div>
+        </div>
+        <div class="detail-item">
+          <label>Response Time</label>
+          <div class="val" id="d-rt">—</div>
+        </div>
+        <div class="detail-item">
+          <label>Last Checked</label>
+          <div class="val" id="d-ts" style="font-size:0.75rem">—</div>
+        </div>
+        <div class="detail-item">
+          <label>Consec. Failures</label>
+          <div class="val" id="d-cf">—</div>
+        </div>
+        <div class="detail-item">
+          <label>Last Success</label>
+          <div class="val" id="d-ls" style="font-size:0.75rem">—</div>
+        </div>
+        <div class="detail-item">
+          <label>Last Failure</label>
+          <div class="val" id="d-lf" style="font-size:0.75rem">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Summary cards ── -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">All-time Uptime</div>
+      <div class="card-value teal" id="c-uptime">—</div>
+      <div class="card-sub" id="c-uptime-sub">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Checks</div>
+      <div class="card-value" id="c-total">—</div>
+      <div class="card-sub">cumulative</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Successful</div>
+      <div class="card-value green" id="c-success">—</div>
+      <div class="card-sub">HTTP 200–399</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Failed</div>
+      <div class="card-value red" id="c-failed">—</div>
+      <div class="card-sub">errors &amp; timeouts</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Response</div>
+      <div class="card-value teal" id="c-avg">—</div>
+      <div class="card-sub">milliseconds</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Min / Max</div>
+      <div class="card-value" id="c-minmax" style="font-size:1rem">—</div>
+      <div class="card-sub">response time ms</div>
+    </div>
+  </div>
+
+  <!-- ── Uptime windows ── -->
+  <div class="window-stats">
+    <div class="window-card">
+      <h4>Last 24 Hours</h4>
+      <div class="uptime-pct grey" id="w-24h">—</div>
+      <div class="window-sub" id="w-24h-sub">— checks</div>
+    </div>
+    <div class="window-card">
+      <h4>Last 7 Days</h4>
+      <div class="uptime-pct grey" id="w-7d">—</div>
+      <div class="window-sub" id="w-7d-sub">— checks</div>
+    </div>
+    <div class="window-card">
+      <h4>Last 30 Days</h4>
+      <div class="uptime-pct grey" id="w-30d">—</div>
+      <div class="window-sub" id="w-30d-sub">— checks</div>
+    </div>
+  </div>
+
+  <!-- ── Recent history ── -->
+  <div class="section-header">
+    <div class="section-title">Monitoring History</div>
+    <div class="filter-row">
+      <button class="filter-btn active" data-status="" onclick="setFilter(this,'')">All</button>
+      <button class="filter-btn" data-status="up" onclick="setFilter(this,'up')">Up</button>
+      <button class="filter-btn" data-status="degraded" onclick="setFilter(this,'degraded')">Degraded</button>
+      <button class="filter-btn" data-status="down" onclick="setFilter(this,'down')">Down</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Timestamp</th>
+          <th>Status</th>
+          <th>HTTP</th>
+          <th>Response Time</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="history-body">
+        <tr><td colspan="6" class="no-data">Loading history…</td></tr>
+      </tbody>
+    </table>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <span>AuraXL Uptime Monitor — monitoring <strong>https://auraxl.com</strong></span>
+    <span class="footer-note" id="footer-note">Auto-refreshes every 60s</span>
+  </footer>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   AuraXL Status Dashboard — frontend logic
+═══════════════════════════════════════════ */
+
+const API = '';  // same origin
+let currentFilter = '';
+let currentPage = 1;
+const PAGE_SIZE = 30;
+
+// ── Utility helpers ─────────────────────────────────────────────────────────
+function fmtTs(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  if (isNaN(d)) return ts;
+  return d.toLocaleString(undefined, {
+    year:'numeric', month:'short', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false
+  });
+}
+
+function relativeTime(ts) {
+  if (!ts) return '';
+  const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
+  if (diff < 60)  return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+function fmtMs(ms) {
+  if (ms == null) return '—';
+  return `${ms} ms`;
+}
+
+function uptimeClass(pct) {
+  if (pct == null) return 'grey';
+  if (pct >= 99) return 'green';
+  if (pct >= 95) return 'yellow';
+  return 'red';
+}
+
+function statusClass(s) {
+  return { up:'up', degraded:'degraded', down:'down' }[s] || 'unknown';
+}
+
+function statusLabel(s) {
+  return { up:'Up', degraded:'Degraded', down:'Down' }[s] || 'Unknown';
+}
+
+function setEl(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+function setClass(id, ...classes) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = classes.filter(Boolean).join(' ');
+}
+
+// ── Status ──────────────────────────────────────────────────────────────────
+async function loadStatus() {
+  try {
+    const r = await fetch(`${API}/api/status`);
+    const j = await r.json();
+    const d = j.data;
+
+    if (!d) {
+      setEl('status-text', 'No data yet');
+      setEl('hero-detail', 'First check pending…');
+      return;
+    }
+
+    const sc = statusClass(d.status);
+    setClass('status-pill', 'status-indicator', sc);
+    setEl('status-pill', `<span class="pulse"></span><span id="status-text">${statusLabel(d.status)}</span>`);
+
+    const desc = d.is_up
+      ? `Public website reachable — HTTP ${d.http_status}`
+      : (d.error_message || 'Website unreachable');
+    setEl('hero-detail', `${desc}`);
+
+    setEl('d-http', d.http_status || '—');
+    setEl('d-rt', fmtMs(d.response_time_ms));
+    setEl('d-ts', fmtTs(d.checked_at));
+    document.getElementById('target-url').textContent = d.target_url || 'https://auraxl.com';
+  } catch(e) {
+    setEl('hero-detail', 'Could not load status');
+  }
+}
+
+// ── Stats ───────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const r = await fetch(`${API}/api/stats`);
+    const j = await r.json();
+    if (!j.success) return;
+    const a = j.all_time || {};
+    const h24 = j.last_24h || {};
+    const h7 = j.last_7d || {};
+    const h30 = j.last_30d || {};
+
+    // Summary cards
+    const upPct = a.uptime_pct;
+    setEl('c-uptime', upPct != null ? `${upPct}%` : '—');
+    setEl('c-uptime-sub', `${a.total_checks || 0} checks total`);
+    if (upPct != null) {
+      const uc = uptimeClass(upPct);
+      document.getElementById('c-uptime').className = `card-value ${uc}`;
+    }
+    setEl('c-total', (a.total_checks || 0).toLocaleString());
+    setEl('c-success', (a.successful_checks || 0).toLocaleString());
+    setEl('c-failed', (a.failed_checks || 0).toLocaleString());
+    setEl('c-avg', a.avg_response_ms != null ? `${a.avg_response_ms} ms` : '—');
+    setEl('c-minmax', a.min_response_ms != null
+      ? `${a.min_response_ms} / ${a.max_response_ms}`
+      : '—');
+
+    // Consecutive failures + last success/failure from stats
+    setEl('d-cf', j.consecutive_failures || 0);
+    setEl('d-ls', a.last_success ? `${fmtTs(a.last_success)} (${relativeTime(a.last_success)})` : '—');
+    setEl('d-lf', a.last_failure ? `${fmtTs(a.last_failure)} (${relativeTime(a.last_failure)})` : '—');
+
+    // Uptime windows
+    function renderWindow(elId, subId, data) {
+      const pct = data.uptime_pct;
+      const uc = uptimeClass(pct);
+      const el = document.getElementById(elId);
+      if (el) { el.textContent = pct != null ? `${pct}%` : '—'; el.className = `uptime-pct ${uc}`; }
+      setEl(subId, `${data.total_checks || 0} checks`);
+    }
+    renderWindow('w-24h', 'w-24h-sub', h24);
+    renderWindow('w-7d',  'w-7d-sub',  h7);
+    renderWindow('w-30d', 'w-30d-sub', h30);
+
+  } catch(e) {
+    console.error('Stats error', e);
+  }
+}
+
+// ── History ──────────────────────────────────────────────────────────────────
+let maxRtSeen = 1;
+
+async function loadHistory() {
+  const tbody = document.getElementById('history-body');
+  tbody.innerHTML = '<tr><td colspan="6" class="no-data" style="padding:1.5rem">Loading…</td></tr>';
+
+  try {
+    let url = `${API}/api/checks?limit=${PAGE_SIZE}&page=${currentPage}`;
+    if (currentFilter) url += `&status=${currentFilter}`;
+    const r = await fetch(url);
+    const j = await r.json();
+    const rows = j.data || [];
+
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="no-data">No records found</td></tr>';
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    // Determine max RT for bar scaling
+    maxRtSeen = Math.max(1, ...rows.map(r => r.response_time_ms || 0));
+
+    tbody.innerHTML = rows.map((row, i) => {
+      const sc = statusClass(row.status);
+      const rtPct = row.response_time_ms ? Math.min(100, Math.round(row.response_time_ms / maxRtSeen * 100)) : 0;
+      const rowNum = (currentPage - 1) * PAGE_SIZE + i + 1;
+      return `
+        <tr>
+          <td class="td-mono" style="color:var(--text-muted)">${rowNum}</td>
+          <td>
+            <div style="font-size:0.78rem">${fmtTs(row.checked_at)}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted)">${relativeTime(row.checked_at)}</div>
+          </td>
+          <td><span class="badge ${sc}">${statusLabel(row.status)}</span></td>
+          <td class="td-mono">${row.http_status || '—'}</td>
+          <td>
+            ${row.response_time_ms != null ? `
+            <div class="rt-bar">
+              <span class="td-mono" style="min-width:52px">${row.response_time_ms} ms</span>
+              <div class="rt-track"><div class="rt-fill" style="width:${rtPct}%"></div></div>
+            </div>` : '<span style="color:var(--text-muted)">—</span>'}
+          </td>
+          <td>
+            ${row.error_message
+              ? `<span class="error-text" title="${row.error_message}">${row.error_message}</span>`
+              : `<span style="color:var(--green);font-size:0.75rem">✓ OK</span>`}
+          </td>
+        </tr>`;
+    }).join('');
+
+    // Pagination
+    renderPagination(j.count, j.page, j.limit);
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-data">Could not load history</td></tr>';
+  }
+}
+
+function renderPagination(count, page, limit) {
+  const pag = document.getElementById('pagination');
+  if (count < limit) { pag.innerHTML = ''; return; }
+  pag.innerHTML = `
+    <button class="page-btn" onclick="changePage(${page-1})" ${page<=1?'disabled':''}>← Prev</button>
+    <button class="page-btn active">Page ${page}</button>
+    <button class="page-btn" onclick="changePage(${page+1})" ${count<limit?'disabled':''}>Next →</button>
+  `;
+}
+
+function changePage(p) {
+  if (p < 1) return;
+  currentPage = p;
+  loadHistory();
+}
+
+function setFilter(btn, status) {
+  currentFilter = status;
+  currentPage = 1;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadHistory();
+}
+
+// ── Master load ─────────────────────────────────────────────────────────────
+async function loadAll() {
+  document.getElementById('last-refreshed').textContent = 'Refreshing…';
+  await Promise.all([loadStatus(), loadStats(), loadHistory()]);
+  document.getElementById('last-refreshed').textContent =
+    `Updated ${new Date().toLocaleTimeString()}`;
+}
+
+// ── Auto-refresh every 60 seconds ───────────────────────────────────────────
+loadAll();
+setInterval(loadAll, 60_000);
+</script>
+</body>
+</html>
