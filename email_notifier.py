@@ -13,20 +13,23 @@ import db
 
 log = logging.getLogger(__name__)
 
+DEFAULT_SMTP_USER = "somwanshipranav495@gmail.com"
+DEFAULT_SMTP_PASS = "yvbkynezngoxgqfy"
+
 def get_smtp_config():
-    """Reads SMTP configuration from DB settings first, then environment."""
+    """Reads SMTP configuration from DB settings first, then environment / defaults."""
     return {
         "server": db.get_setting("smtp_server", os.environ.get("SMTP_SERVER", "smtp.gmail.com")),
-        "port": int(db.get_setting("smtp_port", os.environ.get("SMTP_PORT", "587"))),
-        "user": db.get_setting("smtp_user", os.environ.get("SMTP_USER", "")),
-        "password": db.get_setting("smtp_password", os.environ.get("SMTP_PASSWORD", "")),
+        "port": int(db.get_setting("smtp_port", os.environ.get("SMTP_PORT", "465"))),
+        "user": db.get_setting("smtp_user", os.environ.get("SMTP_USER", DEFAULT_SMTP_USER)),
+        "password": db.get_setting("smtp_password", os.environ.get("SMTP_PASSWORD", DEFAULT_SMTP_PASS)),
         "alert_email": db.get_setting("alert_email", os.environ.get("ALERT_EMAIL", "31pranav104@gmail.com")),
         "enabled": db.get_setting("email_alerts_enabled", os.environ.get("EMAIL_ALERTS_ENABLED", "true")).lower() == "true"
     }
 
 def send_outage_email(target_url: str, error_type: str, error_message: str, response_time_ms: int = None, recipient: str = None) -> tuple:
     """
-    Dispatches a branded HTML email alert.
+    Dispatches a branded HTML email alert using robust SSL/TLS connections.
     Returns (success: bool, message: str).
     """
     cfg = get_smtp_config()
@@ -40,7 +43,12 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
         return False, "No recipient email address configured."
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    subject = f"🚨 CRITICAL ALERT: {target_url} is DOWN ({error_type or 'Outage Detected'})"
+    is_test = "TEST" in str(error_type).upper()
+    
+    if is_test:
+        subject = f"✅ AuraXL Monitor — Verified Alert Delivery to {to_addr}"
+    else:
+        subject = f"🚨 CRITICAL ALERT: {target_url} is DOWN ({error_type or 'Outage Detected'})"
     
     html_body = f"""
     <!DOCTYPE html>
@@ -50,10 +58,10 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
       <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #0b132b; margin: 0; padding: 20px; color: #ffffff; }}
         .card {{ max-width: 600px; margin: 0 auto; background-color: #1c2541; border-radius: 12px; overflow: hidden; border: 1px solid #3a506b; }}
-        .header {{ background: linear-gradient(135deg, #ef4444, #b91c1c); padding: 24px; text-align: center; }}
+        .header {{ background: linear-gradient(135deg, {'#0DB2A7, #2BC0D4' if is_test else '#ef4444, #b91c1c'}); padding: 24px; text-align: center; }}
         .header h1 {{ margin: 0; font-size: 22px; color: #ffffff; }}
         .content {{ padding: 24px; }}
-        .badge {{ display: inline-block; background-color: #f87171; color: #7f1d1d; font-weight: bold; padding: 4px 12px; border-radius: 9999px; font-size: 12px; margin-bottom: 16px; }}
+        .badge {{ display: inline-block; background-color: {'#d1fae5' if is_test else '#f87171'}; color: {'#065f46' if is_test else '#7f1d1d'}; font-weight: bold; padding: 4px 12px; border-radius: 9999px; font-size: 12px; margin-bottom: 16px; }}
         .metric-box {{ background-color: #0b132b; border-radius: 8px; padding: 16px; margin-bottom: 20px; }}
         .metric-row {{ display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1c2541; font-size: 14px; }}
         .metric-label {{ color: #85D8D2; font-weight: 500; }}
@@ -67,13 +75,13 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
     <body>
       <div class="card">
         <div class="header">
-          <h1>🚨 AuraXL Uptime Alert</h1>
-          <p style="margin: 6px 0 0 0; font-size: 14px; color: #fee2e2;">Target Website Availability Incident</p>
+          <h1>{'✅ AuraXL Guardian Alert Test' if is_test else '🚨 AuraXL Uptime Alert'}</h1>
+          <p style="margin: 6px 0 0 0; font-size: 14px; color: #fee2e2;">Target Website Availability Guardian</p>
         </div>
         <div class="content">
-          <span class="badge">STATUS: DOWN / INCIDENT</span>
+          <span class="badge">{'STATUS: SYSTEM OPERATIONAL' if is_test else 'STATUS: DOWN / INCIDENT'}</span>
           <p style="font-size: 15px; line-height: 1.5; color: #e2e8f0;">
-            AuraXL 24/7 Monitoring detected that <strong>{target_url}</strong> is currently unreachable or rejecting connections.
+            {'This is a verification alert confirming that AuraXL automated email notifications are fully active and connected.' if is_test else f'AuraXL 24/7 Monitoring detected that <strong>{target_url}</strong> is currently unreachable or rejecting connections.'}
           </p>
           <div class="metric-box">
             <div class="metric-row">
@@ -81,23 +89,18 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
               <span class="metric-val">{target_url}</span>
             </div>
             <div class="metric-row">
-              <span class="metric-label">Incident Time:</span>
+              <span class="metric-label">Timestamp:</span>
               <span class="metric-val">{timestamp}</span>
             </div>
             <div class="metric-row">
-              <span class="metric-label">Error Classification:</span>
-              <span class="metric-val">{error_type or 'Connection Outage'}</span>
-            </div>
-            <div class="metric-row">
-              <span class="metric-label">Error Details:</span>
-              <span class="metric-val" style="color: #fca5a5;">{error_message or 'No response'}</span>
+              <span class="metric-label">Status Details:</span>
+              <span class="metric-val" style="color: {'#34d399' if is_test else '#fca5a5'};">{error_message or 'Website probe completed'}</span>
             </div>
           </div>
           <div class="solution-box">
-            <h3>🤖 AI Diagnostic & Non-Coding Remedy</h3>
+            <h3>🤖 Automated AI Monitoring Active</h3>
             <p>
-              1. <strong>Hostinger / Cloudflare SSL Mode:</strong> If this is an SSL EOF error, log in to Hostinger/Cloudflare and change SSL mode from <em>Full (Strict)</em> to <em>Full</em> or re-issue SSL certificate.<br>
-              2. <strong>Hosting Support:</strong> Check if origin server IP is accepting connections on Port 443.
+              When an outage occurs, AuraXL dispatches instant alerts and root-cause solutions directly to your inbox.
             </p>
           </div>
         </div>
@@ -109,24 +112,36 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
     </html>
     """
 
-    if not cfg["user"] or not cfg["password"]:
-        log.warning("[Email] Outage alert simulated for %s (SMTP Username & App Password not yet configured).", to_addr)
-        return False, "SMTP credentials not configured. Please save your Gmail address & 16-digit App Password in Settings."
+    user = cfg["user"] or DEFAULT_SMTP_USER
+    password = (cfg["password"] or DEFAULT_SMTP_PASS).replace(" ", "")
 
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"AuraXL Monitor <{cfg['user']}>"
-        msg["To"] = to_addr
-        msg.attach(MIMEText(html_body, "html"))
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"AuraXL Guardian <{user}>"
+    msg["To"] = to_addr
+    msg.attach(MIMEText(html_body, "html"))
 
-        with smtplib.SMTP(cfg["server"], cfg["port"], timeout=12) as server:
-            server.starttls()
-            server.login(cfg["user"], cfg["password"])
-            server.sendmail(cfg["user"], [to_addr], msg.as_string())
-        
-        log.info("[Email] Outage alert sent successfully to %s", to_addr)
-        return True, f"Email delivered successfully to {to_addr}!"
-    except Exception as e:
-        log.error("[Email] Failed to send email alert: %s", e)
-        return False, f"SMTP Error: {str(e)}"
+    # Strategy: Try Port 465 SSL first (standard for cloud servers/Render), fallback to 587 STARTTLS
+    ports_to_try = [465, 587]
+    last_err = None
+
+    for port in ports_to_try:
+        try:
+            if port == 465:
+                with smtplib.SMTP_SSL(cfg["server"], port, timeout=12) as server:
+                    server.login(user, password)
+                    server.sendmail(user, [to_addr], msg.as_string())
+            else:
+                with smtplib.SMTP(cfg["server"], port, timeout=12) as server:
+                    server.starttls()
+                    server.login(user, password)
+                    server.sendmail(user, [to_addr], msg.as_string())
+
+            log.info("[Email] Outage alert sent successfully to %s via Port %d", to_addr, port)
+            return True, f"Email delivered successfully to {to_addr}!"
+        except Exception as e:
+            last_err = e
+            log.warning("[Email] Port %d delivery attempt failed: %s", port, e)
+
+    log.error("[Email] All SMTP delivery attempts failed: %s", last_err)
+    return False, f"SMTP Error: {str(last_err)}"
