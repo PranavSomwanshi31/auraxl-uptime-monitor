@@ -42,6 +42,11 @@ CREATE TABLE IF NOT EXISTS checks (
 CREATE INDEX IF NOT EXISTS idx_checks_checked_at ON checks (checked_at DESC);
 CREATE INDEX IF NOT EXISTS idx_checks_status     ON checks (status);
 CREATE INDEX IF NOT EXISTS idx_checks_target_url ON checks (target_url);
+
+CREATE TABLE IF NOT EXISTS settings (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
 
 _SCHEMA_SQLITE = """
@@ -60,6 +65,11 @@ CREATE TABLE IF NOT EXISTS checks (
 CREATE INDEX IF NOT EXISTS idx_checks_checked_at ON checks (checked_at DESC);
 CREATE INDEX IF NOT EXISTS idx_checks_status     ON checks (status);
 CREATE INDEX IF NOT EXISTS idx_checks_target_url ON checks (target_url);
+
+CREATE TABLE IF NOT EXISTS settings (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
 
 
@@ -314,3 +324,60 @@ def get_consecutive_failures():
         else:
             break
     return count
+
+
+def get_setting(key: str, default: str = "") -> str:
+    """Get a single setting value."""
+    if _USE_POSTGRES:
+        sql = "SELECT value FROM settings WHERE key = %s"
+        params = (key,)
+    else:
+        sql = "SELECT value FROM settings WHERE key = ?"
+        params = (key,)
+    with get_cursor() as cur:
+        cur.execute(sql, params)
+        row = cur.fetchone()
+    if row:
+        r = _row_to_dict(row)
+        return r.get("value", default)
+    return default
+
+
+def get_all_settings() -> dict:
+    """Return all settings as a dict."""
+    defaults = {
+        "target_url": os.environ.get("TARGET_URL", "https://auraxl.com"),
+        "alert_email": os.environ.get("ALERT_EMAIL", "31pranav104@gmail.com"),
+        "monitor_interval_minutes": os.environ.get("MONITOR_INTERVAL_MINUTES", "5"),
+        "email_alerts_enabled": os.environ.get("EMAIL_ALERTS_ENABLED", "true"),
+        "push_alerts_enabled": "true"
+    }
+    sql = "SELECT key, value FROM settings"
+    with get_cursor() as cur:
+        cur.execute(sql)
+        rows = cur.fetchall()
+    for row in rows:
+        r = _row_to_dict(row)
+        defaults[r["key"]] = r["value"]
+    return defaults
+
+
+def set_setting(key: str, value: str):
+    """Set a setting value."""
+    if _USE_POSTGRES:
+        sql = """
+            INSERT INTO settings (key, value)
+            VALUES (%s, %s)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+        """
+        params = (key, str(value))
+    else:
+        sql = """
+            INSERT INTO settings (key, value)
+            VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        """
+        params = (key, str(value))
+    with get_cursor() as cur:
+        cur.execute(sql, params)
+

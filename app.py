@@ -135,7 +135,8 @@ def health():
 @app.route("/api/status")
 def api_status():
     """Return the latest monitoring check result."""
-    row = db.get_latest_check(TARGET_URL)
+    target_url = db.get_setting("target_url", TARGET_URL)
+    row = db.get_latest_check(target_url) or db.get_latest_check()
     if row is None:
         return jsonify({
             "success": True,
@@ -143,6 +144,46 @@ def api_status():
             "message": "No checks performed yet",
         })
     return jsonify({"success": True, "data": _serialise(row)})
+
+
+@app.route("/api/settings", methods=["GET"])
+def get_settings():
+    """Get current monitoring & notification settings."""
+    settings = db.get_all_settings()
+    return jsonify({"success": True, "data": settings})
+
+
+@app.route("/api/settings", methods=["POST"])
+def update_settings():
+    """Save monitoring & notification settings."""
+    data = request.get_json() or {}
+    
+    if "target_url" in data and data["target_url"].strip():
+        db.set_setting("target_url", data["target_url"].strip())
+        
+    if "alert_email" in data:
+        db.set_setting("alert_email", data["alert_email"].strip())
+        
+    if "monitor_interval_minutes" in data:
+        try:
+            interval = max(1, int(data["monitor_interval_minutes"]))
+            db.set_setting("monitor_interval_minutes", str(interval))
+            scheduler.update_schedule(interval)
+        except ValueError:
+            pass
+            
+    if "email_alerts_enabled" in data:
+        db.set_setting("email_alerts_enabled", str(data["email_alerts_enabled"]).lower())
+        
+    if "push_alerts_enabled" in data:
+        db.set_setting("push_alerts_enabled", str(data["push_alerts_enabled"]).lower())
+        
+    return jsonify({
+        "success": True, 
+        "message": "Settings saved successfully!",
+        "data": db.get_all_settings()
+    })
+
 
 
 @app.route("/api/checks")

@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>AuraXL — 24/7 Real-Time Website Status</title>
-<meta name="description" content="Real-time 24/7 uptime monitoring, AI root-cause diagnostics and status dashboard for AuraXL.com" />
+<title>AuraXL — 24/7 Website Availability Guardian</title>
+<meta name="description" content="Official 24/7 Uptime Monitoring, Real-time Telemetry & AI Diagnostic Dashboard for AuraXL" />
 
 <!-- PWA & Mobile App Support (Android & iOS) -->
 <link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#0DB2A7" />
+<meta name="theme-color" content="#2BC0D4" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="AuraXL Monitor" />
 <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png" />
-<link rel="icon" type="image/png" href="/static/icons/icon-96x96.png" />
+<link rel="icon" type="image/png" href="/static/logo.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -22,131 +22,192 @@
 
 <style>
 /* ═══════════════════════════════════════════
-   Design Tokens
+   AuraXL Official Brand Palette & Design Tokens
 ═══════════════════════════════════════════ */
 :root {
-  --teal:        #2BC0D4;
-  --teal-dark:   #0DB2A7;
-  --teal-soft:   #e6fffa;
-  --orange:      #F26727;
-  --green:       #10b981;
-  --green-bg:    #ecfdf5;
-  --red:         #ef4444;
-  --red-bg:      #fef2f2;
-  --yellow:      #f59e0b;
-  --yellow-bg:   #fffbeb;
-  --grey:        #6b7280;
-  --grey-bg:     #f9fafb;
-  --text:        #0f172a;
-  --text-muted:  #64748b;
-  --border:      #e2e8f0;
-  --surface:     #ffffff;
-  --bg:          #f8fafc;
-  --radius:      14px;
-  --radius-sm:   8px;
-  --shadow:      0 1px 3px 0 rgb(0 0 0/.06), 0 1px 2px -1px rgb(0 0 0/.04);
-  --shadow-md:   0 4px 6px -1px rgb(0 0 0/.08), 0 2px 4px -2px rgb(0 0 0/.04);
-  --shadow-lg:   0 10px 25px -3px rgb(0 0 0/.08), 0 4px 6px -4px rgb(0 0 0/.04);
-  --font:        'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --mono:        'JetBrains Mono', monospace;
-  --transition:  180ms ease;
+  --auraxl-teal:       #2BC0D4;
+  --auraxl-soft-teal:  #85D8D2;
+  --auraxl-dark-teal:  #0DB2A7;
+  --auraxl-mint:       #48C4BC;
+  --auraxl-orange:     #F26727;
+  --auraxl-gray:       #5E5F5F;
+  --auraxl-bg:         #FFFFFF;
+  
+  --green:             #10b981;
+  --green-bg:          #ecfdf5;
+  --red:               #ef4444;
+  --red-bg:            #fef2f2;
+  --yellow:            #f59e0b;
+  --yellow-bg:         #fffbeb;
+  --grey:              #64748b;
+  --grey-bg:           #f8fafc;
+  
+  --text-main:         #1e293b;
+  --text-muted:        #64748b;
+  --border:            #e2e8f0;
+  --surface:           #ffffff;
+  --surface-alt:       #f8fafc;
+  --radius:            16px;
+  --radius-sm:         10px;
+  --shadow:            0 1px 3px 0 rgb(0 0 0/.05), 0 1px 2px -1px rgb(0 0 0/.05);
+  --shadow-md:         0 4px 6px -1px rgb(0 0 0/.07), 0 2px 4px -2px rgb(0 0 0/.05);
+  --shadow-lg:         0 10px 25px -3px rgb(0 0 0/.08), 0 4px 6px -4px rgb(0 0 0/.03);
+  --font:              'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:              'JetBrains Mono', monospace;
+  --transition:        180ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
+  background: #f8fafc;
+  color: var(--text-main);
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-.page { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+.page { max-width: 1140px; margin: 0 auto; padding: 1.25rem 1.25rem 3.5rem; }
 
-/* ── Live Telemetry Radar Bar ── */
-.live-radar-bar {
-  background: linear-gradient(135deg, #091e2b, #11293a);
-  color: #fff;
-  padding: 0.65rem 1.25rem;
-  border-radius: var(--radius-sm);
-  margin-top: 1rem;
-  margin-bottom: 1.25rem;
+/* ── Top Navigation Bar ── */
+.navbar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.78rem;
   box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 1rem;
 }
-.radar-ping {
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.brand-logo-img {
+  height: 48px;
+  width: auto;
+  max-width: 170px;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-divider {
+  width: 1px;
+  height: 34px;
+  background: var(--border);
+}
+
+.target-info-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.target-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.target-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  color: var(--auraxl-dark-teal);
+  font-family: var(--mono);
+  font-weight: 600;
+  text-decoration: none;
+  background: #e6fffa;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+  transition: all var(--transition);
+  max-width: max-content;
+}
+.target-link-badge:hover {
+  background: var(--auraxl-teal);
+  color: #fff;
+  border-color: var(--auraxl-teal);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* ── Buttons ── */
+.btn {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
   font-weight: 600;
-  color: var(--teal);
-}
-.radar-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--teal);
-  box-shadow: 0 0 8px var(--teal);
-  animation: radarPulse 1.8s infinite;
-}
-@keyframes radarPulse {
-  0% { transform: scale(0.9); opacity: 0.7; }
-  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--teal); }
-  100% { transform: scale(0.9); opacity: 0.7; }
-}
-
-/* ── Header ── */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 0 1rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1.25rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.header-brand { display: flex; align-items: center; gap: 0.75rem; }
-.header-logo {
-  width: 42px; height: 42px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 1.1rem;
-  box-shadow: 0 4px 10px rgba(13, 178, 167, 0.3);
-}
-.header-title { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
-.header-subtitle { font-size: 0.78rem; color: var(--text-muted); }
-
-.header-actions {
-  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
-}
-.btn {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.45rem 0.85rem; border-radius: var(--radius-sm);
-  font-size: 0.78rem; font-weight: 600; cursor: pointer;
-  transition: all var(--transition); border: 1px solid var(--border);
-  background: var(--surface); color: var(--text);
-  font-family: var(--font); text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-main);
+  font-family: var(--font);
+  text-decoration: none;
 }
 .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
-.btn-teal { background: var(--teal-dark); color: #fff; border-color: var(--teal-dark); }
-.btn-teal:hover { background: #0b9b91; border-color: #0b9b91; color: #fff; }
-.btn-orange { background: var(--orange); color: #fff; border-color: var(--orange); }
-.btn-orange:hover { background: #d85418; border-color: #d85418; color: #fff; }
+.btn-teal {
+  background: linear-gradient(135deg, var(--auraxl-teal), var(--auraxl-dark-teal));
+  color: #fff;
+  border: none;
+  box-shadow: 0 3px 8px rgba(13, 178, 167, 0.25);
+}
+.btn-teal:hover {
+  background: linear-gradient(135deg, var(--auraxl-dark-teal), #0a8f86);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(13, 178, 167, 0.35);
+}
+.btn-orange {
+  background: var(--auraxl-orange);
+  color: #fff;
+  border-color: var(--auraxl-orange);
+  box-shadow: 0 3px 8px rgba(242, 103, 39, 0.25);
+}
+.btn-orange:hover {
+  background: #d85418;
+  color: #fff;
+}
+.btn-outline {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--auraxl-gray);
+}
+.btn-outline:hover {
+  border-color: var(--auraxl-teal);
+  color: var(--auraxl-dark-teal);
+  background: #f0fdfa;
+}
 
 /* ── Hero Status Cards ── */
 .hero {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1.25fr 1fr;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
-@media (max-width: 768px) { .hero { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .hero { grid-template-columns: 1fr; } }
 
 .status-card {
   background: var(--surface);
@@ -156,13 +217,22 @@ body {
   border: 1px solid var(--border);
 }
 .status-card.main {
-  display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.2rem;
+  background: linear-gradient(to bottom right, #ffffff, #f9fafb);
 }
 
 .status-indicator {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.45rem 1rem; border-radius: 999px;
-  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 .status-indicator.up       { background: var(--green-bg);  color: var(--green); border: 1px solid #bbf7d0; }
 .status-indicator.degraded { background: var(--yellow-bg); color: var(--yellow); border: 1px solid #fde68a; }
@@ -170,143 +240,106 @@ body {
 .status-indicator.unknown  { background: var(--grey-bg);   color: var(--grey); border: 1px solid #e2e8f0; }
 
 .pulse {
-  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
 }
 .up .pulse       { background: var(--green);  box-shadow: 0 0 0 rgba(16,185,129,0.4); animation: pGreen 1.8s infinite; }
 .degraded .pulse { background: var(--yellow); box-shadow: 0 0 0 rgba(245,158,11,0.4); animation: pYellow 1.8s infinite; }
 .down .pulse     { background: var(--red);    box-shadow: 0 0 0 rgba(239,68,68,0.4); animation: pRed 1.8s infinite; }
 .unknown .pulse  { background: var(--grey); }
 
-@keyframes pGreen  { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.7); } 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-@keyframes pYellow { 0% { box-shadow: 0 0 0 0 rgba(245,158,11,.7); } 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-@keyframes pRed    { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,.7); }  70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@keyframes pGreen  { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.7); } 70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@keyframes pYellow { 0% { box-shadow: 0 0 0 0 rgba(245,158,11,.7); } 70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@keyframes pRed    { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,.7); }  70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 
-.hero-stat-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.25rem; }
-.hero-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; line-height: 1.1; }
-.hero-stat-sub   { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem; }
+.hero-stat-label { font-size: 0.72rem; font-weight: 700; color: var(--auraxl-gray); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem; }
+.hero-stat-value { font-size: 1.6rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em; line-height: 1.15; }
+.hero-stat-sub   { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.35rem; }
 
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem 1.25rem; }
-.detail-item label { font-size: 0.68rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.15rem; }
-.detail-item .val  { font-size: 0.88rem; font-weight: 700; color: var(--text); font-family: var(--mono); }
-
-/* ── 🤖 AI Diagnostic Box ── */
-.ai-box {
-  background: linear-gradient(135deg, #091e2b, #0f2e3d);
-  border-radius: var(--radius);
-  padding: 1.4rem;
-  color: #fff;
-  margin-bottom: 1.5rem;
-  border: 1px solid #1e455a;
-  box-shadow: var(--shadow-md);
-}
-.ai-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;
-}
-.ai-title {
-  display: flex; align-items: center; gap: 0.5rem;
-  font-weight: 700; font-size: 0.95rem; color: var(--teal);
-}
-.ai-body { font-size: 0.84rem; color: #cbd5e1; line-height: 1.6; }
-.ticket-box {
-  background: #06131c;
-  border: 1px solid #1e3a4b;
-  border-radius: var(--radius-sm);
-  padding: 0.9rem 1.1rem;
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  color: #a5f3fc;
-  margin-top: 0.75rem;
-  position: relative;
-  white-space: pre-wrap;
-}
-.copy-ticket-btn {
-  position: absolute; top: 0.6rem; right: 0.6rem;
-  background: var(--teal-dark); color: #fff; border: none;
-  padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.7rem;
-  font-weight: 600; cursor: pointer;
-}
-.copy-ticket-btn:hover { background: var(--teal); }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.95rem 1.3rem; }
+.detail-item label { font-size: 0.68rem; font-weight: 700; color: var(--auraxl-gray); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.2rem; }
+.detail-item .val  { font-size: 0.92rem; font-weight: 700; color: var(--text-main); font-family: var(--mono); }
 
 /* ── Metric Cards ── */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: 0.85rem;
   margin-bottom: 1.5rem;
 }
 .card {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 1rem 1.15rem;
+  padding: 1.1rem 1.25rem;
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
+  transition: all var(--transition);
 }
-.card-label { font-size: 0.68rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.35rem; }
-.card-value { font-size: 1.35rem; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; }
-.card-sub   { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.card-label { font-size: 0.68rem; font-weight: 700; color: var(--auraxl-gray); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.35rem; }
+.card-value { font-size: 1.45rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; line-height: 1.1; }
+.card-sub   { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; }
+.card-value.teal   { color: var(--auraxl-dark-teal); }
 .card-value.green  { color: var(--green); }
 .card-value.red    { color: var(--red); }
 .card-value.yellow { color: var(--yellow); }
-.card-value.teal   { color: var(--teal-dark); }
 
 /* ── Uptime Windows ── */
 .window-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
+  gap: 0.85rem;
   margin-bottom: 1.5rem;
 }
-@media (max-width: 580px) { .window-stats { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .window-stats { grid-template-columns: 1fr; } }
 .window-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.1rem;
+  padding: 1.15rem;
   box-shadow: var(--shadow);
 }
-.window-card h4 { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 0.5rem; }
-.uptime-pct { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; }
+.window-card h4 { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--auraxl-gray); margin-bottom: 0.5rem; }
+.uptime-pct { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; }
 .uptime-pct.green  { color: var(--green); }
 .uptime-pct.yellow { color: var(--yellow); }
 .uptime-pct.red    { color: var(--red); }
 .uptime-pct.grey   { color: var(--grey); }
 
-/* ── Table ── */
+/* ── History Table ── */
 .section-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 0.75rem; gap: 0.5rem; flex-wrap: wrap;
+  margin-bottom: 0.85rem; gap: 0.5rem; flex-wrap: wrap;
 }
-.section-title { font-size: 0.95rem; font-weight: 800; color: var(--text); }
+.section-title { font-size: 1rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.01em; }
 
 .filter-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .filter-btn {
-  padding: 0.3rem 0.7rem; border-radius: 6px; border: 1px solid var(--border);
-  font-size: 0.72rem; font-weight: 600; cursor: pointer; background: var(--surface);
+  padding: 0.35rem 0.75rem; border-radius: 7px; border: 1px solid var(--border);
+  font-size: 0.74rem; font-weight: 600; cursor: pointer; background: var(--surface);
   color: var(--text-muted); transition: all var(--transition);
 }
-.filter-btn:hover, .filter-btn.active { border-color: var(--teal-dark); color: var(--teal-dark); background: var(--teal-soft); }
+.filter-btn:hover, .filter-btn.active { border-color: var(--auraxl-dark-teal); color: var(--auraxl-dark-teal); background: #f0fdfa; }
 
 .table-wrap {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); overflow-x: auto; box-shadow: var(--shadow);
 }
-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+table { width: 100%; border-collapse: collapse; min-width: 620px; }
 thead th {
-  background: #f8fafc; padding: 0.75rem 1rem;
+  background: #f8fafc; padding: 0.8rem 1.1rem;
   text-align: left; font-size: 0.68rem; font-weight: 700;
-  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--auraxl-gray); text-transform: uppercase; letter-spacing: 0.06em;
   border-bottom: 1px solid var(--border);
 }
-tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr { border-bottom: 1px solid var(--border); transition: background var(--transition); }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background: #f8fafc; }
-tbody td { padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text); vertical-align: middle; }
-.td-mono { font-family: var(--mono); font-size: 0.75rem; }
+tbody td { padding: 0.8rem 1.1rem; font-size: 0.82rem; color: var(--text-main); vertical-align: middle; }
+.td-mono { font-family: var(--mono); font-size: 0.76rem; }
 
 .badge {
   display: inline-flex; align-items: center; gap: 0.3rem;
-  padding: 0.22rem 0.6rem; border-radius: 999px; font-size: 0.7rem;
+  padding: 0.22rem 0.65rem; border-radius: 999px; font-size: 0.72rem;
   font-weight: 700;
 }
 .badge.up       { background: var(--green-bg);  color: var(--green); }
@@ -315,31 +348,121 @@ tbody td { padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text); vertica
 
 .rt-bar { display: flex; align-items: center; gap: 0.4rem; }
 .rt-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; max-width: 70px; }
-.rt-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--teal), var(--teal-dark)); }
+.rt-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--auraxl-teal), var(--auraxl-dark-teal)); }
 
-.error-text { color: var(--red); font-size: 0.74rem; font-weight: 500; }
+.error-text { color: var(--red); font-size: 0.76rem; font-weight: 500; }
 .no-data { padding: 2.5rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
 
-/* ── Toast & WhatsApp Style Popup Modal ── */
-#whatsapp-modal {
-  position: fixed; top: 1.5rem; right: 1.5rem; max-width: 380px; width: 90%;
-  background: #ffffff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-  border-left: 6px solid #25D366; padding: 1rem 1.25rem; z-index: 9999;
-  display: none; animation: slideIn 0.3s ease;
+/* ── MODALS (AI Assistant & Settings) ── */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+  z-index: 9999; display: none; align-items: center; justify-content: center;
+  padding: 1rem; animation: fadeIn 0.2s ease;
 }
-@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-.wa-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
-.wa-brand { display: flex; align-items: center; gap: 0.4rem; font-weight: 700; font-size: 0.85rem; color: #075E54; }
-.wa-body { font-size: 0.8rem; color: #334155; line-height: 1.4; }
-.wa-close { cursor: pointer; background: none; border: none; color: #94a3b8; font-size: 1rem; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* ── PWA Install Banner ── */
-#pwa-banner {
-  background: linear-gradient(135deg, #0DB2A7, #2BC0D4);
-  color: #fff; padding: 0.75rem 1.25rem; border-radius: var(--radius-sm);
-  display: none; align-items: center; justify-content: space-between;
-  margin-bottom: 1rem; font-size: 0.82rem; font-weight: 600;
+.modal-card {
+  background: #ffffff; width: 100%; max-width: 620px;
+  border-radius: var(--radius); box-shadow: var(--shadow-lg);
+  overflow: hidden; max-height: 90vh; display: flex; flex-direction: column;
+  animation: scaleUp 0.2s ease;
 }
+@keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: #f8fafc;
+}
+.modal-title {
+  font-size: 1.05rem; font-weight: 800; color: var(--text-main);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.modal-close {
+  background: none; border: none; font-size: 1.25rem; color: var(--text-muted);
+  cursor: pointer; padding: 0.2rem;
+}
+.modal-close:hover { color: var(--text-main); }
+.modal-body {
+  padding: 1.5rem; overflow-y: auto; flex: 1;
+}
+.modal-footer {
+  padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 0.6rem; background: #f8fafc;
+}
+
+/* Form inputs */
+.form-group { margin-bottom: 1.2rem; }
+.form-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem; }
+.form-desc  { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+.form-input, .form-select {
+  width: 100%; padding: 0.6rem 0.85rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); font-family: var(--font); font-size: 0.84rem;
+  color: var(--text-main); background: #ffffff; transition: border-color var(--transition);
+}
+.form-input:focus, .form-select:focus {
+  outline: none; border-color: var(--auraxl-teal); box-shadow: 0 0 0 3px rgba(43, 192, 212, 0.15);
+}
+
+/* Switch toggle */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1rem; background: #f8fafc; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); margin-bottom: 0.9rem;
+}
+.toggle-info { display: flex; flex-direction: column; gap: 0.15rem; }
+.toggle-title { font-size: 0.82rem; font-weight: 700; color: var(--text-main); }
+.toggle-desc { font-size: 0.72rem; color: var(--text-muted); }
+
+.switch {
+  position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #cbd5e1; transition: .3s; border-radius: 24px;
+}
+.slider:before {
+  position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+  background-color: white; transition: .3s; border-radius: 50%;
+}
+input:checked + .slider { background-color: var(--auraxl-dark-teal); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+/* AI Assistant Modal Specifics */
+.ai-diagnosis-card {
+  background: #f0fdfa; border: 1px solid #99f6e4;
+  border-radius: var(--radius-sm); padding: 1rem 1.15rem; margin-bottom: 1rem;
+}
+.ai-fix-card {
+  background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: var(--radius-sm); padding: 1rem 1.15rem; margin-bottom: 1rem;
+  font-size: 0.82rem; color: #92400e; line-height: 1.5;
+}
+.ticket-box {
+  background: #0f172a; border-radius: var(--radius-sm); padding: 1rem;
+  font-family: var(--mono); font-size: 0.75rem; color: #a5f3fc;
+  position: relative; white-space: pre-wrap; margin-top: 0.5rem;
+}
+.copy-ticket-btn {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  background: var(--auraxl-teal); color: #fff; border: none;
+  padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.7rem;
+  font-weight: 700; cursor: pointer;
+}
+.copy-ticket-btn:hover { background: var(--auraxl-dark-teal); }
+
+/* ── Toast Message ── */
+#toast {
+  position: fixed; bottom: 2rem; right: 2rem;
+  background: #0f172a; color: #fff; padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 600;
+  display: none; z-index: 10000; box-shadow: var(--shadow-lg);
+  border-left: 4px solid var(--auraxl-teal); animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 /* ── Footer ── */
 .footer {
@@ -351,64 +474,151 @@ tbody td { padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text); vertica
 </head>
 <body>
 
-<!-- WhatsApp Style Popup Notification -->
-<div id="whatsapp-modal">
-  <div class="wa-header">
-    <div class="wa-brand"><i class="fab fa-whatsapp text-lg" style="color:#25D366;"></i> <span>AuraXL Alert Notification</span></div>
-    <button class="wa-close" onclick="closePopup()">&times;</button>
-  </div>
-  <div class="wa-body" id="wa-text">
-    ⚠️ Target <strong>https://auraxl.com</strong> is currently DOWN. High priority alert dispatched.
+<!-- Toast Notification -->
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════
+     🤖 AI ASSISTANCE & SUPPORT TEAM MODAL
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="assistant-modal" onclick="if(event.target===this) closeAssistantModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fas fa-robot text-teal-600" style="color:var(--auraxl-dark-teal);"></i>
+        <span>AI Diagnostic Assistant & Support Team</span>
+      </div>
+      <button class="modal-close" onclick="closeAssistantModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="ai-diagnosis-card">
+        <div style="font-weight:800;font-size:0.88rem;color:#0f766e;margin-bottom:0.35rem;" id="ai-modal-heading">
+          Target Status Diagnosis
+        </div>
+        <div style="font-size:0.82rem;color:#134e4a;line-height:1.5;" id="ai-modal-desc">
+          Analyzing target connectivity…
+        </div>
+      </div>
+
+      <div class="ai-fix-card" id="ai-fix-container">
+        <div style="font-weight:800;margin-bottom:0.3rem;"><i class="fas fa-wrench"></i> Non-Coding Action Steps (Hosting Settings):</div>
+        <div id="ai-modal-steps"></div>
+      </div>
+
+      <div style="font-size:0.8rem;font-weight:700;color:var(--text-main);margin-top:1rem;">
+        <i class="fas fa-headset" style="color:var(--auraxl-orange);"></i> Copyable Support Ticket (Send to Hostinger / Cloudflare Support):
+      </div>
+      <div class="ticket-box" id="ai-modal-ticket-box">
+        <button class="copy-ticket-btn" onclick="copySupportTicket()"><i class="fas fa-copy"></i> Copy Ticket</button>
+        <div id="ai-modal-ticket-text">Loading support ticket…</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeAssistantModal()">Close</button>
+      <button class="btn btn-teal" onclick="copySupportTicket()"><i class="fas fa-copy"></i> Copy Support Ticket</button>
+    </div>
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     ⚙️ SETTINGS MODAL
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="settings-modal" onclick="if(event.target===this) closeSettingsModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fas fa-sliders-h" style="color:var(--auraxl-dark-teal);"></i>
+        <span>Monitor & Notification Settings</span>
+      </div>
+      <button class="modal-close" onclick="closeSettingsModal()">&times;</button>
+    </div>
+    <form id="settings-form" onsubmit="saveSettings(event)">
+      <div class="modal-body">
+        
+        <div class="form-group">
+          <label class="form-label" for="setting-target-url">Target Company Website</label>
+          <div class="form-desc">The URL actively probed every interval for availability.</div>
+          <input type="url" id="setting-target-url" class="form-input" placeholder="https://auraxl.com" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-alert-email">Notification Recipient Email</label>
+          <div class="form-desc">Email address that receives automated incident alerts.</div>
+          <input type="email" id="setting-alert-email" class="form-input" placeholder="31pranav104@gmail.com" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-interval">Check & Notification Timing Interval</label>
+          <div class="form-desc">How frequently the monitoring service sends HTTP requests.</div>
+          <select id="setting-interval" class="form-select">
+            <option value="5">Every 5 Minutes (Real-Time Standard)</option>
+            <option value="10">Every 10 Minutes</option>
+            <option value="15">Every 15 Minutes</option>
+            <option value="30">Every 30 Minutes</option>
+            <option value="60">Every 1 Hour (60 Minutes)</option>
+          </select>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-title">📧 Email Incident Alerts</div>
+            <div class="toggle-desc">Send automated HTML outage emails when site is down.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="setting-email-toggle" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-title">📱 Mobile & Device Push Notifications</div>
+            <div class="toggle-desc">Popup WhatsApp-style alerts on phone lockscreens and desktop.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="setting-push-toggle" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeSettingsModal()">Cancel</button>
+        <button type="submit" class="btn btn-teal" id="save-settings-btn"><i class="fas fa-save"></i> Save Settings</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN DASHBOARD PAGE
+═══════════════════════════════════════════ -->
 <div class="page">
 
-  <!-- PWA Install Banner for Mobile App -->
-  <div id="pwa-banner">
-    <div style="display:flex;align-items:center;gap:0.6rem;">
-      <i class="fas fa-mobile-alt text-xl"></i>
-      <span>Install AuraXL Monitor Mobile App on your device for instant offline access!</span>
-    </div>
-    <button class="btn btn-orange" id="pwa-install-btn" style="padding:0.35rem 0.75rem;font-size:0.75rem;">
-      <i class="fas fa-download"></i> Install App
-    </button>
-  </div>
-
-  <!-- Live Telemetry Radar Bar (Real-Time Auto-Updating) -->
-  <div class="live-radar-bar">
-    <div class="radar-ping">
-      <span class="radar-dot"></span>
-      <span>LIVE REAL-TIME TELEMETRY ACTIVE</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;">
-      <span>Target: <strong style="color:#2BC0D4;">https://auraxl.com</strong></span>
-      <span>Auto-Updating: <strong style="color:#10b981;">Every 5s (No Reload Required)</strong></span>
-      <span id="live-timer">Sync: Live</span>
-    </div>
-  </div>
-
-  <!-- ── Header ── -->
-  <header class="header">
-    <div class="header-brand">
-      <div class="header-logo"><i class="fas fa-heartbeat"></i></div>
-      <div>
-        <div class="header-title">AuraXL 24/7 Uptime Guardian</div>
-        <div class="header-subtitle">Continuous Cloud Availability Monitor & AI Diagnostic</div>
+  <!-- ── Top Brand & Target Navbar (Image 1 & Image 3 Specification) ── -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="/static/auraxl_brand_logo.png" alt="AuraXL Logo" class="brand-logo-img" onerror="this.src='/static/logo.png'" />
+      <div class="brand-divider"></div>
+      <div class="target-info-box">
+        <div class="target-name" id="target-title-display">AuraXL</div>
+        <a href="https://auraxl.com" target="_blank" class="target-link-badge" id="nav-target-link">
+          https://auraxl.com <i class="fas fa-external-link-alt" style="font-size:0.65rem;"></i>
+        </a>
       </div>
     </div>
-    <div class="header-actions">
-      <button class="btn" id="push-btn" onclick="requestPushPermission()">
-        <i class="fas fa-bell text-teal-600"></i> Enable Popup Alerts
+
+    <div class="nav-actions">
+      <button class="btn btn-teal" onclick="openAssistantModal()">
+        <i class="fas fa-robot"></i> AI Assistance & Support Team
       </button>
-      <button class="btn btn-teal" onclick="triggerManualCheck()">
+      <button class="btn btn-outline" onclick="openSettingsModal()">
+        <i class="fas fa-sliders-h"></i> Settings
+      </button>
+      <button class="btn btn-orange" onclick="triggerManualCheck()">
         <i class="fas fa-bolt"></i> Probe Now
       </button>
-      <button class="btn" onclick="loadAll()">
-        <i class="fas fa-sync-alt"></i> Refresh
-      </button>
     </div>
-  </header>
+  </nav>
 
   <!-- ── Hero Status ── -->
   <div class="hero">
@@ -417,15 +627,18 @@ tbody td { padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text); vertica
         <div style="margin-bottom:0.85rem">
           <span class="status-indicator unknown" id="status-pill">
             <span class="pulse"></span>
-            <span id="status-text">Testing Connection…</span>
+            <span id="status-text">Probing Target…</span>
           </span>
         </div>
-        <div class="hero-stat-label">Monitored Target</div>
+        <div class="hero-stat-label">Active Monitored Origin</div>
         <div class="hero-stat-value" id="target-display">https://auraxl.com</div>
-        <div class="hero-stat-sub" id="hero-detail">Actively probing server origin…</div>
+        <div class="hero-stat-sub" id="hero-detail">Active real-time probe running…</div>
       </div>
-      <div style="font-size:0.75rem;color:var(--text-muted);" id="realtime-status-note">
-        <i class="fas fa-check-circle text-green-500"></i> Telemetry updates live in real-time.
+      <div style="font-size:0.75rem;color:var(--auraxl-gray);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+        <span><i class="fas fa-sync-alt fa-spin" style="color:var(--auraxl-dark-teal);"></i> Auto-updating live (every 5s)</span>
+        <button class="btn btn-outline" onclick="openAssistantModal()" style="padding:0.25rem 0.55rem;font-size:0.7rem;">
+          <i class="fas fa-info-circle text-teal-600"></i> View Root Cause Fix
+        </button>
       </div>
     </div>
 
@@ -437,7 +650,7 @@ tbody td { padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text); vertica
           <div class="val" id="d-http">—</div>
         </div>
         <div class="detail-item">
-          <label>Latency / Ping</label>
+          <label>Response Latency</label>
           <div class="val" id="d-rt">—</div>
         </div>
         <div class="detail-item">
@@ -460,24 +673,6 @@ tbody td { padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text); vertica
     </div>
   </div>
 
-  <!-- ── 🤖 AI Diagnostic & Non-Coding Solutions Assistant ── -->
-  <div class="ai-box" id="ai-assistant-card">
-    <div class="ai-header">
-      <div class="ai-title">
-        <i class="fas fa-robot text-lg"></i>
-        <span>AuraXL AI Diagnostic Assistant (Plain English & Non-Coding Solutions)</span>
-      </div>
-      <span class="badge" style="background:#0e3b43;color:#2BC0D4;">Zero-Code Remedy</span>
-    </div>
-    <div class="ai-body" id="ai-explanation">
-      Analyzing target telemetry to provide simple, non-coding fixes…
-    </div>
-    <div class="ticket-box" id="ai-ticket-container" style="display:none;">
-      <button class="copy-ticket-btn" onclick="copySupportTicket()"><i class="fas fa-copy"></i> Copy Ticket</button>
-      <div id="ai-ticket-text"></div>
-    </div>
-  </div>
-
   <!-- ── Metric Cards ── -->
   <div class="cards">
     <div class="card">
@@ -486,9 +681,9 @@ tbody td { padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text); vertica
       <div class="card-sub" id="c-uptime-sub">— checks</div>
     </div>
     <div class="card">
-      <div class="card-label">Total Probes</div>
+      <div class="card-label">Total Checks</div>
       <div class="card-value" id="c-total">—</div>
-      <div class="card-sub">automated checks</div>
+      <div class="card-sub">automated probes</div>
     </div>
     <div class="card">
       <div class="card-label">Successful</div>
@@ -533,7 +728,7 @@ tbody td { padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text); vertica
 
   <!-- ── Monitoring History ── -->
   <div class="section-header">
-    <div class="section-title">Telemetry & Incident Log</div>
+    <div class="section-title">Telemetry & Check History</div>
     <div class="filter-row">
       <button class="filter-btn active" onclick="setFilter(this,'')">All Checks</button>
       <button class="filter-btn" onclick="setFilter(this,'up')">Up (Healthy)</button>
@@ -558,99 +753,156 @@ tbody td { padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--text); vertica
         <tr><td colspan="6" class="no-data">Loading telemetry records…</td></tr>
       </tbody>
     </table>
-    <div class="pagination" id="pagination"></div>
   </div>
 
   <!-- ── Footer ── -->
   <footer class="footer">
-    <span>AuraXL Standalone Uptime Guardian • Target: <strong>https://auraxl.com</strong></span>
-    <span>Auto-refresh: <strong style="color:var(--teal-dark);">Active (5s Real-Time Polling)</strong></span>
+    <span>AuraXL 24/7 Availability Guardian • Target: <strong id="footer-target">https://auraxl.com</strong></span>
+    <span>Auto-Refresh: <strong style="color:var(--auraxl-dark-teal);">Live 5s Polling</strong></span>
   </footer>
 
 </div>
 
 <script>
 /* ═══════════════════════════════════════════
-   Frontend Real-Time Telemetry Engine
+   AuraXL Frontend Engine
 ═══════════════════════════════════════════ */
 
 let currentFilter = '';
 let currentPage = 1;
 const PAGE_SIZE = 25;
-let deferredPrompt = null;
-let lastKnownStatus = null;
+let latestTelemetryData = null;
 
-// Register Service Worker for Mobile PWA
+// PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
 
-// PWA Install Prompt
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const pwaBanner = document.getElementById('pwa-banner');
-  if (pwaBanner) pwaBanner.style.display = 'flex';
-});
-
-document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      document.getElementById('pwa-banner').style.display = 'none';
-    }
-    deferredPrompt = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (t) {
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 4000);
   }
-});
+}
 
-// Sound Chime for Popup Alert
-function playAlertChime() {
+// ── Modals ──
+function openAssistantModal() {
+  updateAiAssistantModal();
+  document.getElementById('assistant-modal').style.display = 'flex';
+}
+function closeAssistantModal() {
+  document.getElementById('assistant-modal').style.display = 'none';
+}
+
+async function openSettingsModal() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
-    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    const res = await fetch('/api/settings');
+    const j = await res.json();
+    if (j.success && j.data) {
+      const d = j.data;
+      if (document.getElementById('setting-target-url')) document.getElementById('setting-target-url').value = d.target_url || 'https://auraxl.com';
+      if (document.getElementById('setting-alert-email')) document.getElementById('setting-alert-email').value = d.alert_email || '31pranav104@gmail.com';
+      if (document.getElementById('setting-interval')) document.getElementById('setting-interval').value = d.monitor_interval_minutes || '5';
+      if (document.getElementById('setting-email-toggle')) document.getElementById('setting-email-toggle').checked = d.email_alerts_enabled !== 'false';
+      if (document.getElementById('setting-push-toggle')) document.getElementById('setting-push-toggle').checked = d.push_alerts_enabled !== 'false';
+    }
   } catch(e){}
+  document.getElementById('settings-modal').style.display = 'flex';
+}
+function closeSettingsModal() {
+  document.getElementById('settings-modal').style.display = 'none';
 }
 
-function showPopup(text) {
-  const modal = document.getElementById('whatsapp-modal');
-  const txt = document.getElementById('wa-text');
-  if (modal && txt) {
-    txt.innerHTML = text;
-    modal.style.display = 'block';
-    playAlertChime();
-    setTimeout(() => { modal.style.display = 'none'; }, 8000);
+async function saveSettings(e) {
+  e.preventDefault();
+  const btn = document.getElementById('save-settings-btn');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
+
+  const targetUrl = document.getElementById('setting-target-url').value.trim();
+  const alertEmail = document.getElementById('setting-alert-email').value.trim();
+  const interval = document.getElementById('setting-interval').value;
+  const emailToggle = document.getElementById('setting-email-toggle').checked;
+  const pushToggle = document.getElementById('setting-push-toggle').checked;
+
+  try {
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        target_url: targetUrl,
+        alert_email: alertEmail,
+        monitor_interval_minutes: interval,
+        email_alerts_enabled: emailToggle.toString(),
+        push_alerts_enabled: pushToggle.toString()
+      })
+    });
+    const j = await res.json();
+    if (j.success) {
+      showToast('✅ Settings saved! Monitoring interval & target updated.');
+      closeSettingsModal();
+      loadAll();
+    } else {
+      showToast('❌ Error saving settings.');
+    }
+  } catch(err) {
+    showToast('❌ Failed to connect to server.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
   }
 }
 
-function closePopup() {
-  const modal = document.getElementById('whatsapp-modal');
-  if (modal) modal.style.display = 'none';
-}
+// ── AI Assistant Diagnostic Engine ──
+function updateAiAssistantModal() {
+  const d = latestTelemetryData;
+  const heading = document.getElementById('ai-modal-heading');
+  const desc = document.getElementById('ai-modal-desc');
+  const steps = document.getElementById('ai-modal-steps');
+  const ticket = document.getElementById('ai-modal-ticket-text');
 
-async function requestPushPermission() {
-  if (!('Notification' in window)) {
-    alert('Web Notifications are not supported in this browser.');
+  if (!d) return;
+
+  if (d.status === 'up') {
+    heading.innerHTML = `🟢 Target Website is Reachable & Healthy`;
+    desc.innerHTML = `The web server at <code>${d.target_url}</code> is actively answering HTTPS requests in <strong>${d.response_time_ms}ms</strong> with valid SSL certificates.`;
+    steps.innerHTML = `No action needed! Your site is currently up and available worldwide.`;
+    ticket.textContent = `Website ${d.target_url} is currently healthy. No support ticket needed.`;
     return;
   }
-  const perm = await Notification.requestPermission();
-  if (perm === 'granted') {
-    showPopup('✅ <strong>Notifications Enabled!</strong> You will receive instant WhatsApp-style popup alerts when the website goes down.');
-    try {
-      new Notification('AuraXL Guardian Alert', {
-        body: 'Popup alert notifications active for https://auraxl.com',
-        icon: '/static/icons/icon-192x192.png'
-      });
-    } catch(e){}
+
+  // If Down / Error
+  const errMsg = d.error_message || '';
+  if (errMsg.includes('UNEXPECTED_EOF_WHILE_READING') || errMsg.includes('SSL') || d.error_type === 'connection_error') {
+    heading.innerHTML = `🚨 SSL/TLS Handshake Disconnect (Outage)`;
+    desc.innerHTML = `<strong>In Simple Words:</strong> Your domain points to the server, but the web hosting server is abruptly cutting off secure HTTPS connections before completing the SSL security handshake.`;
+    steps.innerHTML = `
+      1. <strong>Cloudflare Dashboard (if used):</strong> Go to <em>SSL/TLS</em> &rarr; change encryption mode from <strong>"Full (Strict)"</strong> to <strong>"Full"</strong> or <strong>"Flexible"</strong>.<br>
+      2. <strong>Hostinger / cPanel:</strong> Go to <em>Websites &rarr; SSL &rarr; Reinstall / Force HTTPS</em>.
+    `;
+    ticket.textContent = `Subject: Urgent - SSL Handshake drop on ${d.target_url}\n\nHi Support Team,\n\nMy domain ${d.target_url} is failing HTTPS connections with the error:\n[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol.\n\nPlease inspect the SSL certificate installation and web server HTTPS vhost configuration on Port 443 so incoming secure connections are not abruptly reset.\n\nThank you!`;
+  } else if (d.error_type === 'dns_failure') {
+    heading.innerHTML = `⚠️ DNS Resolution Failure`;
+    desc.innerHTML = `<strong>In Simple Words:</strong> The domain name cannot be translated into a server IP address.`;
+    steps.innerHTML = `Log in to domain registrar (GoDaddy/Hostinger/Namecheap) &rarr; Verify that A Record points to your server IP.`;
+    ticket.textContent = `Subject: DNS Resolution failure for ${d.target_url}\n\nHi Support,\n\nDNS lookups for ${d.target_url} are failing. Please verify nameservers and A records.`;
+  } else {
+    heading.innerHTML = `⚠️ HTTP Outage (${d.http_status || 'Network Drop'})`;
+    desc.innerHTML = `<strong>In Simple Words:</strong> The website returned an error code <code>${d.http_status || 'Connection Error'}</code>.`;
+    steps.innerHTML = `Restart your web hosting container or verify application logs.`;
+    ticket.textContent = `Subject: Website Outage on ${d.target_url}\n\nHi Support, ${d.target_url} is currently returning HTTP ${d.http_status}. Please investigate.`;
+  }
+}
+
+function copySupportTicket() {
+  const text = document.getElementById('ai-modal-ticket-text')?.textContent;
+  if (text) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('📋 Support ticket copied to clipboard! Paste into Hosting Live Chat.');
+    });
   }
 }
 
@@ -661,7 +913,6 @@ function fmtTs(ts) {
     month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false
   });
 }
-
 function relativeTime(ts) {
   if (!ts) return '';
   const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
@@ -670,87 +921,10 @@ function relativeTime(ts) {
   if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
   return `${Math.floor(diff/86400)}d ago`;
 }
+function statusClass(s) { return { up:'up', degraded:'degraded', down:'down' }[s] || 'unknown'; }
+function statusLabel(s) { return { up:'UP (REACHABLE)', degraded:'DEGRADED', down:'DOWN (OUTAGE)' }[s] || 'UNKNOWN'; }
 
-function statusClass(s) {
-  return { up:'up', degraded:'degraded', down:'down' }[s] || 'unknown';
-}
-function statusLabel(s) {
-  return { up:'UP (REACHABLE)', degraded:'DEGRADED', down:'DOWN (OUTAGE)' }[s] || 'UNKNOWN';
-}
-
-// 🤖 AI Diagnostic Engine with Non-Coding Solutions
-function updateAiDiagnostics(d) {
-  const aiBox = document.getElementById('ai-explanation');
-  const ticketCont = document.getElementById('ai-ticket-container');
-  const ticketText = document.getElementById('ai-ticket-text');
-  
-  if (!d) return;
-
-  if (d.status === 'up') {
-    aiBox.innerHTML = `
-      <div style="color:#34d399;font-weight:700;margin-bottom:0.35rem;">
-        <i class="fas fa-check-circle"></i> Public website is healthy and responding normally.
-      </div>
-      <p style="margin:0;font-size:0.82rem;color:#94a3b8;">
-        The web server origin at <code>${d.target_url}</code> is answering HTTPS requests in <strong>${d.response_time_ms}ms</strong> with valid SSL certificates.
-      </p>
-    `;
-    if (ticketCont) ticketCont.style.display = 'none';
-    return;
-  }
-
-  // If Down / Error
-  const errMsg = d.error_message || '';
-  let simpleExplanation = '';
-  let nonCodingFix = '';
-  let supportTicket = '';
-
-  if (errMsg.includes('UNEXPECTED_EOF_WHILE_READING') || errMsg.includes('SSL') || d.error_type === 'connection_error') {
-    simpleExplanation = `
-      <strong>What this error means in simple words:</strong><br>
-      Your website server is abruptly cutting off secure HTTPS connections right when visitors try to load it. Your domain points to the server, but the SSL/TLS security certificate on the hosting server is missing, corrupted, or misconfigured in Cloudflare/Hostinger.
-    `;
-    nonCodingFix = `
-      <strong>🛠️ Non-Coding Steps to Fix:</strong><br>
-      1. <strong>Cloudflare Dashboard:</strong> Go to <em>SSL/TLS</em> &rarr; change encryption mode from <strong>"Full (Strict)"</strong> to <strong>"Full"</strong> or <strong>"Flexible"</strong>.<br>
-      2. <strong>Hostinger / Hosting cPanel:</strong> Go to <em>Websites &rarr; SSL &rarr; Reinstall / Force HTTPS</em>.
-    `;
-    supportTicket = `Subject: Urgent - SSL Handshake drop on https://auraxl.com\n\nHi Support Team,\n\nMy domain https://auraxl.com is failing HTTPS connections with the error:\n[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol.\n\nPlease inspect the SSL certificate installation and web server HTTPS vhost configuration on Port 443 so incoming secure connections are not abruptly reset.\n\nThank you!`;
-  } else if (d.error_type === 'dns_failure') {
-    simpleExplanation = `<strong>What this means:</strong> The domain name cannot be translated into a server IP address. Your domain nameservers or DNS records are not pointing to an active hosting server.`;
-    nonCodingFix = `<strong>🛠️ Non-Coding Steps:</strong> Log in to your domain registrar (GoDaddy/Hostinger/Namecheap) &rarr; Verify that A Record points to your server IP.`;
-    supportTicket = `Subject: DNS Resolution failure for auraxl.com\n\nHi Support,\n\nDNS lookups for auraxl.com are failing. Please verify nameserver propagation and A records.`;
-  } else {
-    simpleExplanation = `<strong>What this means:</strong> Server returned error code <code>${d.http_status || 'Network Drop'}</code>.`;
-    nonCodingFix = `<strong>🛠️ Non-Coding Steps:</strong> Restart web service or contact hosting support.`;
-    supportTicket = `Subject: Website Outage on auraxl.com\n\nHi Support, auraxl.com is currently returning HTTP ${d.http_status}. Please investigate.`;
-  }
-
-  aiBox.innerHTML = `
-    <div style="margin-bottom:0.6rem;color:#fca5a5;">${simpleExplanation}</div>
-    <div style="background:#0a2533;padding:0.75rem 1rem;border-radius:6px;margin-bottom:0.5rem;color:#e2e8f0;font-size:0.8rem;">
-      ${nonCodingFix}
-    </div>
-    <div style="font-size:0.78rem;color:#38bdf8;">
-      <i class="fas fa-clipboard-list"></i> <strong>Copyable Support Ticket for Hosting Live Chat:</strong>
-    </div>
-  `;
-  if (ticketCont && ticketText) {
-    ticketText.textContent = supportTicket;
-    ticketCont.style.display = 'block';
-  }
-}
-
-function copySupportTicket() {
-  const text = document.getElementById('ai-ticket-text')?.textContent;
-  if (text) {
-    navigator.clipboard.writeText(text).then(() => {
-      alert('Support ticket copied to clipboard! You can paste this directly into Hostinger / Domain Live Chat.');
-    });
-  }
-}
-
-// ── Status Telemetry Loader (Auto-Polling) ──
+// ── Live Telemetry Data Loader ──
 async function loadStatus() {
   try {
     const r = await fetch('/api/status');
@@ -758,11 +932,18 @@ async function loadStatus() {
     const d = j.data;
     if (!d) return;
 
-    // Check for state transitions and alert
-    if (lastKnownStatus && lastKnownStatus === 'up' && d.status === 'down') {
-      showPopup(`🚨 <strong>CRITICAL OUTAGE DETECTED!</strong><br>Target ${d.target_url} is now DOWN. Error: ${d.error_message || 'Connection reset'}`);
+    latestTelemetryData = d;
+
+    // Update target URL link and displays
+    if (d.target_url) {
+      document.getElementById('target-display').textContent = d.target_url;
+      document.getElementById('footer-target').textContent = d.target_url;
+      const navLink = document.getElementById('nav-target-link');
+      if (navLink) {
+        navLink.href = d.target_url;
+        navLink.innerHTML = `${d.target_url} <i class="fas fa-external-link-alt" style="font-size:0.65rem;"></i>`;
+      }
     }
-    lastKnownStatus = d.status;
 
     const sc = statusClass(d.status);
     const pill = document.getElementById('status-pill');
@@ -779,8 +960,6 @@ async function loadStatus() {
     document.getElementById('d-http').textContent = d.http_status || '—';
     document.getElementById('d-rt').textContent = d.response_time_ms != null ? `${d.response_time_ms} ms` : '—';
     document.getElementById('d-ts').textContent = `${fmtTs(d.checked_at)} (${relativeTime(d.checked_at)})`;
-
-    updateAiDiagnostics(d);
   } catch(e){}
 }
 
@@ -888,6 +1067,7 @@ async function triggerManualCheck() {
   try {
     await fetch('/api/status');
     await loadAll();
+    showToast('⚡ Manual probe completed successfully!');
   } finally {
     if (btn) btn.innerHTML = `<i class="fas fa-bolt"></i> Probe Now`;
   }
@@ -905,7 +1085,7 @@ setInterval(() => {
   loadStatus();
 }, 5000);
 
-// Background Full Aggregation Refresh (Every 30 seconds)
+// Background Full Stats Refresh (Every 30 seconds)
 setInterval(() => {
   loadStats();
   loadHistory();

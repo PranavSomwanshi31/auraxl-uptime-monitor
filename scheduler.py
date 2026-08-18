@@ -28,8 +28,12 @@ _scheduler_started = False
 
 def _scheduled_check():
     """Run a monitoring check, persist the result, and dispatch alerts if down."""
+    target_url = db.get_setting("target_url", os.environ.get("TARGET_URL", "https://auraxl.com"))
+    email_enabled = db.get_setting("email_alerts_enabled", "true").lower() == "true"
+    alert_email = db.get_setting("alert_email", os.environ.get("ALERT_EMAIL", "31pranav104@gmail.com"))
+
     try:
-        result = monitor.run_check(target_url=TARGET_URL)
+        result = monitor.run_check(target_url=target_url)
         db.insert_check(
             target_url=result["target_url"],
             checked_at=result["checked_at"],
@@ -41,16 +45,29 @@ def _scheduled_check():
             error_message=result["error_message"],
         )
         
-        # Dispatch alert email if website is down
-        if not result["is_up"]:
+        # Dispatch alert email if website is down and email alerts are enabled
+        if not result["is_up"] and email_enabled:
             send_outage_email(
                 target_url=result["target_url"],
                 error_type=result["error_type"],
                 error_message=result["error_message"],
-                response_time_ms=result["response_time_ms"]
+                response_time_ms=result["response_time_ms"],
+                recipient=alert_email
             )
     except Exception:
         log.exception("Error in scheduled check")
+
+
+def update_schedule(interval_minutes: int):
+    """Dynamically reschedule the recurring monitoring check."""
+    try:
+        _scheduler.reschedule_job(
+            "auraxl_check",
+            trigger=IntervalTrigger(minutes=interval_minutes, timezone="UTC")
+        )
+        log.info("[Scheduler] Rescheduled check interval to every %d minutes", interval_minutes)
+    except Exception as e:
+        log.error("[Scheduler] Error rescheduling: %s", e)
 
 
 def start_scheduler():
@@ -63,11 +80,12 @@ def start_scheduler():
         return
 
     _scheduler_started = True
+    interval = int(db.get_setting("monitor_interval_minutes", os.environ.get("MONITOR_INTERVAL_MINUTES", "5")))
 
     # Register the recurring job
     _scheduler.add_job(
         func=_scheduled_check,
-        trigger=IntervalTrigger(minutes=MONITOR_INTERVAL_MINUTES, timezone="UTC"),
+        trigger=IntervalTrigger(minutes=interval, timezone="UTC"),
         id="auraxl_check",
         name="AuraXL site check",
         replace_existing=True,
@@ -77,8 +95,7 @@ def start_scheduler():
 
     _scheduler.start()
     log.info(
-        "[Scheduler] Started — checking %s every %d minutes",
-        TARGET_URL, MONITOR_INTERVAL_MINUTES
+        "[Scheduler] Started — checking target every %d minutes", interval
     )
 
     # Run an immediate check so data is available right away
@@ -89,4 +106,5 @@ def start_scheduler():
 def trigger_now():
     """Run a check immediately (called by POST /api/check-now)."""
     _scheduled_check()
-    return db.get_latest_check(TARGET_URL)
+    target_url = db.get_setting("target_url", os.environ.get("TARGET_URL", "https://auraxl.com"))
+    return db.get_latest_check(target_url)
