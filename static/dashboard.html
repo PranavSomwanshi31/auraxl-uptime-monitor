@@ -589,37 +589,40 @@ input:checked + .slider:before { transform: translateX(20px); }
     </div>
     <div class="modal-body">
       <div style="text-align:center;margin-bottom:1.25rem;">
-        <img src="/static/icons/icon-192x192.png" alt="App Icon" style="width:72px;height:72px;border-radius:16px;box-shadow:0 6px 16px rgba(43,192,212,0.3);margin-bottom:0.6rem;" />
+        <img src="/static/icons/icon-192x192.png" alt="App Icon" style="width:72px;height:72px;border-radius:16px;box-shadow:0 6px 16px rgba(43,192,212,0.3);margin-bottom:0.6rem;" onerror="this.src='/static/logo.png'" />
         <h3 style="font-size:1.1rem;font-weight:800;color:var(--text-main);margin:0;">AuraXL Guardian App</h3>
-        <p style="font-size:0.8rem;color:var(--text-muted);margin:0.2rem 0 0 0;">Native Full-Screen App for Android & iOS</p>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin:0.2rem 0 0 0;">Install as a Native Full-Screen App on Android &amp; iPhone</p>
       </div>
 
-      <!-- Direct 1-Click Install Button for Android / Chrome -->
-      <div style="text-align:center;margin-bottom:1.5rem;" id="direct-install-container">
+      <!-- Android 1-Click Install (shown when Chrome provides beforeinstallprompt) -->
+      <div id="direct-install-container" style="margin-bottom:1.2rem;">
         <button class="btn btn-orange" id="modal-pwa-install-btn" onclick="executePwaInstall()" style="padding:0.65rem 1.4rem;font-size:0.88rem;width:100%;justify-content:center;">
-          <i class="fas fa-download"></i> Install Standalone App on Device
+          <i class="fas fa-download"></i> Install App on This Device (Android Chrome)
         </button>
       </div>
 
-      <div style="background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
+      <!-- Android instructions -->
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:1rem;margin-bottom:0.85rem;">
         <div style="font-weight:800;font-size:0.84rem;color:#0f172a;margin-bottom:0.5rem;">
-          <i class="fab fa-android text-green-600" style="color:#10b981;"></i> Android (Google Chrome):
+          <i class="fab fa-android" style="color:#10b981;"></i> Android (Google Chrome):
         </div>
-        <ol style="margin-left:1.25rem;font-size:0.78rem;color:#475569;line-height:1.6;">
-          <li>Tap the <strong>"Install Standalone App"</strong> button above, or</li>
-          <li>Tap Chrome's <strong>3-dots menu</strong> (top right) &rarr; tap <strong>"Install App"</strong> (or "Add to Home screen").</li>
+        <ol style="margin-left:1.25rem;font-size:0.78rem;color:#475569;line-height:1.65;">
+          <li>Tap the <strong>"Install App"</strong> button above (if visible), <em>or</em></li>
+          <li>Tap Chrome's <strong>3-dots menu ⋮</strong> (top right of browser) &rarr; tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.</li>
+          <li>Tap <strong>Install</strong> to confirm. The app icon will appear on your home screen!</li>
         </ol>
       </div>
 
+      <!-- iOS Safari instructions -->
       <div style="background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;">
         <div style="font-weight:800;font-size:0.84rem;color:#0f172a;margin-bottom:0.5rem;">
-          <i class="fab fa-apple" style="color:#0f172a;"></i> iOS (Apple iPhone / iPad Safari):
+          <i class="fab fa-apple" style="color:#0f172a;"></i> iPhone / iPad (Safari):
         </div>
-        <ol style="margin-left:1.25rem;font-size:0.78rem;color:#475569;line-height:1.6;">
-          <li>Open this site in <strong>Safari</strong> browser on your iPhone.</li>
-          <li>Tap the <strong>Share button</strong> (square with upward arrow at bottom).</li>
-          <li>Scroll down and tap <strong>"Add to Home Screen"</strong> (➕).</li>
-          <li>Tap <strong>Add</strong> in top-right. App icon will be added to your home screen!</li>
+        <ol style="margin-left:1.25rem;font-size:0.78rem;color:#475569;line-height:1.65;">
+          <li>Open <strong><a href="https://auraxl-uptime-monitor.onrender.com" style="color:var(--auraxl-dark-teal);">this link</a></strong> in <strong>Safari</strong> (not Chrome).</li>
+          <li>Tap the <strong>Share button</strong> <span style="font-size:1rem;">&#x2B06;</span> at the bottom of the screen.</li>
+          <li>Scroll down and tap <strong>"Add to Home Screen"</strong> ➕.</li>
+          <li>Tap <strong>Add</strong> in the top-right. Done! The app icon appears on your iPhone home screen.</li>
         </ol>
       </div>
     </div>
@@ -996,50 +999,69 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
 
-// Detect if running inside installed Android / iOS standalone app
+// Detect if running inside installed standalone app (Android/iOS)
+// Only hide install UI if ACTUALLY running as installed PWA, NOT just because localStorage was set before
 function checkStandaloneMode() {
-  const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || 
-                       (window.navigator.standalone === true) || 
-                       document.referrer.includes('android-app://') ||
-                       localStorage.getItem('auraxl_pwa_installed') === 'true';
-  if (isStandalone) {
+  const isReallyStandalone = 
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || 
+    (window.navigator.standalone === true) || 
+    document.referrer.includes('android-app://');
+  
+  if (isReallyStandalone) {
     const bottomBar = document.getElementById('app-install-bottom-bar');
     if (bottomBar) bottomBar.style.display = 'none';
     document.querySelectorAll('.btn-install').forEach(el => el.style.display = 'none');
+  } else {
+    // Always show install banner and button when in browser mode
+    const bottomBar = document.getElementById('app-install-bottom-bar');
+    if (bottomBar) bottomBar.style.display = 'flex';
+    document.querySelectorAll('.btn-install').forEach(el => el.style.display = 'inline-flex');
   }
 }
 checkStandaloneMode();
 
 window.addEventListener('appinstalled', () => {
-  localStorage.setItem('auraxl_pwa_installed', 'true');
   const bottomBar = document.getElementById('app-install-bottom-bar');
   if (bottomBar) bottomBar.style.display = 'none';
   document.querySelectorAll('.btn-install').forEach(el => el.style.display = 'none');
-  showToast('🎉 AuraXL Monitor installed successfully!');
+  showToast('🎉 AuraXL Monitor installed! Open it from your home screen.');
 });
 
 // Capture Android / Chrome PWA install prompt
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  checkStandaloneMode();
+  // Make the install button in the modal actually work
+  const directBtn = document.getElementById('modal-pwa-install-btn');
+  if (directBtn) {
+    directBtn.style.display = 'flex';
+    directBtn.textContent = '📲 Tap to Install App on This Device';
+  }
 });
 
 function executePwaInstall() {
   if (deferredPrompt) {
+    // Android Chrome: native install prompt available
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
-        localStorage.setItem('auraxl_pwa_installed', 'true');
-        document.getElementById('app-install-bottom-bar')?.remove();
-        document.querySelectorAll('.btn-install').forEach(b => b.remove());
-        showToast('🎉 AuraXL Monitor installed successfully!');
+        showToast('✅ Installing AuraXL Monitor...');
         closeInstallModal();
       }
       deferredPrompt = null;
     });
   } else {
-    alert("To install directly:\n\n• On Android Chrome: Tap the 3 dots in the top right > 'Install app'.\n• On iPhone Safari: Tap the Share button > 'Add to Home Screen'.");
+    // No prompt available (iOS, or already installed, or Firefox)
+    // Show the manual instructions instead
+    const container = document.getElementById('direct-install-container');
+    if (container) {
+      container.innerHTML = `
+        <div style="background:#fef9f0;border:1px solid #fde68a;border-radius:10px;padding:0.85rem 1rem;font-size:0.79rem;color:#92400e;text-align:left;">
+          <strong>ℹ️ Install via Browser Menu:</strong><br>
+          • <strong>Android Chrome:</strong> Tap the 3-dots menu (⋮) → "Add to Home screen" or "Install app".<br>
+          • <strong>iPhone Safari:</strong> Tap the Share button (□↑) → "Add to Home Screen".
+        </div>`;
+    }
   }
 }
 
@@ -1603,9 +1625,13 @@ async function triggerManualCheck() {
   const btn = event?.currentTarget;
   if (btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Probing...`;
   try {
-    await fetch('/api/status');
+    // Try authenticated check-now first, fall back to loading latest status
+    await fetch('/api/check-now', { method: 'POST' }).catch(() => {});
     await loadAll();
-    showToast('⚡ Manual probe completed successfully!');
+    showToast('⚡ Manual probe completed!');
+  } catch(e) {
+    await loadAll();
+    showToast('⚡ Status refreshed!');
   } finally {
     if (btn) btn.innerHTML = `<i class="fas fa-bolt"></i> Probe Now`;
   }
