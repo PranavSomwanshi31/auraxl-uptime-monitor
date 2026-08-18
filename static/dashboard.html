@@ -68,6 +68,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Fix background scrolling when modal is open */
+body.modal-open {
+  overflow: hidden !important;
+  height: 100vh !important;
+  touch-action: none;
+}
+
 .page { max-width: 1140px; margin: 0 auto; padding: 1.25rem 1.25rem 3.5rem; }
 
 /* ── Top Navigation Bar ── */
@@ -80,7 +87,7 @@ body {
   align-items: center;
   justify-content: space-between;
   box-shadow: var(--shadow);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -92,9 +99,9 @@ body {
 }
 
 .brand-logo-img {
-  height: 48px;
+  height: 46px;
   width: auto;
-  max-width: 170px;
+  max-width: 165px;
   object-fit: contain;
   display: block;
 }
@@ -189,6 +196,16 @@ body {
   background: #d85418;
   color: #fff;
 }
+.btn-install {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.2);
+}
+.btn-install:hover {
+  background: #1e293b;
+  color: #ffffff;
+}
 .btn-outline {
   border-color: var(--border);
   background: var(--surface);
@@ -198,6 +215,22 @@ body {
   border-color: var(--auraxl-teal);
   color: var(--auraxl-dark-teal);
   background: #f0fdfa;
+}
+
+/* ── App Install Bottom Bar ── */
+#app-install-bottom-bar {
+  background: linear-gradient(135deg, #091e2b, #11293a);
+  color: #ffffff;
+  border-radius: var(--radius);
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-md);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border: 1px solid #1e3a4b;
 }
 
 /* ── Hero Status Cards ── */
@@ -357,7 +390,7 @@ tbody td { padding: 0.8rem 1.1rem; font-size: 0.82rem; color: var(--text-main); 
 #whatsapp-modal {
   position: fixed; top: 1.5rem; right: 1.5rem; max-width: 400px; width: 92%;
   background: #ffffff; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-  border-left: 6px solid #25D366; padding: 1.1rem 1.3rem; z-index: 10000;
+  border-left: 6px solid #25D366; padding: 1.1rem 1.3rem; z-index: 100000;
   display: none; animation: slideIn 0.3s ease;
 }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -366,44 +399,49 @@ tbody td { padding: 0.8rem 1.1rem; font-size: 0.82rem; color: var(--text-main); 
 .wa-body { font-size: 0.82rem; color: #334155; line-height: 1.45; }
 .wa-close { cursor: pointer; background: none; border: none; color: #94a3b8; font-size: 1.1rem; }
 
-/* ── MODALS (AI Assistant & Settings) ── */
+/* ── MODALS (AI Assistant, Settings, App Install) ── */
 .modal-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-  z-index: 9999; display: none; align-items: center; justify-content: center;
-  padding: 1rem; animation: fadeIn 0.2s ease;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 99999; display: none; align-items: center; justify-content: center;
+  padding: 1rem; overflow-y: auto; overscroll-behavior: contain;
+  animation: fadeIn 0.2s ease;
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .modal-card {
   background: #ffffff; width: 100%; max-width: 620px;
   border-radius: var(--radius); box-shadow: var(--shadow-lg);
-  overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;
-  animation: scaleUp 0.2s ease;
+  max-height: 88vh; display: flex; flex-direction: column;
+  overflow: hidden; margin: auto; animation: scaleUp 0.2s ease;
 }
-@keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes scaleUp { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 .modal-header {
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
-  background: #f8fafc;
+  background: #f8fafc; flex-shrink: 0;
 }
 .modal-title {
   font-size: 1.05rem; font-weight: 800; color: var(--text-main);
   display: flex; align-items: center; gap: 0.5rem;
 }
 .modal-close {
-  background: none; border: none; font-size: 1.25rem; color: var(--text-muted);
-  cursor: pointer; padding: 0.2rem;
+  background: none; border: none; font-size: 1.3rem; color: var(--text-muted);
+  cursor: pointer; padding: 0.2rem; line-height: 1;
 }
 .modal-close:hover { color: var(--text-main); }
 .modal-body {
-  padding: 1.5rem; overflow-y: auto; flex: 1;
+  padding: 1.5rem; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
 }
 .modal-footer {
   padding: 1rem 1.5rem; border-top: 1px solid var(--border);
   display: flex; justify-content: flex-end; gap: 0.6rem; background: #f8fafc;
+  flex-shrink: 0;
 }
 
 /* Form inputs */
@@ -478,7 +516,7 @@ input:checked + .slider:before { transform: translateX(20px); }
   position: fixed; bottom: 2rem; right: 2rem;
   background: #0f172a; color: #fff; padding: 0.75rem 1.25rem;
   border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 600;
-  display: none; z-index: 10000; box-shadow: var(--shadow-lg);
+  display: none; z-index: 100000; box-shadow: var(--shadow-lg);
   border-left: 4px solid var(--auraxl-teal); animation: slideUp 0.3s ease;
 }
 @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -506,6 +544,60 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 <!-- Toast Notification -->
 <div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════
+     📱 APP INSTALLATION MODAL (Android & iOS)
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="install-modal" onclick="if(event.target===this) closeInstallModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fas fa-mobile-alt" style="color:var(--auraxl-teal);"></i>
+        <span>Install AuraXL Monitor Mobile App</span>
+      </div>
+      <button class="modal-close" onclick="closeInstallModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;margin-bottom:1.25rem;">
+        <img src="/static/icons/icon-192x192.png" alt="App Icon" style="width:72px;height:72px;border-radius:16px;box-shadow:0 6px 16px rgba(43,192,212,0.3);margin-bottom:0.6rem;" />
+        <h3 style="font-size:1.1rem;font-weight:800;color:var(--text-main);margin:0;">AuraXL Guardian App</h3>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin:0.2rem 0 0 0;">Native Full-Screen App for Android & iOS</p>
+      </div>
+
+      <!-- Direct 1-Click Install Button for Android / Chrome -->
+      <div style="text-align:center;margin-bottom:1.5rem;" id="direct-install-container">
+        <button class="btn btn-orange" id="modal-pwa-install-btn" onclick="executePwaInstall()" style="padding:0.65rem 1.4rem;font-size:0.88rem;width:100%;justify-content:center;">
+          <i class="fas fa-download"></i> Install Standalone App on Device
+        </button>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
+        <div style="font-weight:800;font-size:0.84rem;color:#0f172a;margin-bottom:0.5rem;">
+          <i class="fab fa-android text-green-600" style="color:#10b981;"></i> Android (Google Chrome):
+        </div>
+        <ol style="margin-left:1.25rem;font-size:0.78rem;color:#475569;line-height:1.6;">
+          <li>Tap the <strong>"Install Standalone App"</strong> button above, or</li>
+          <li>Tap Chrome's <strong>3-dots menu</strong> (top right) &rarr; tap <strong>"Install App"</strong> (or "Add to Home screen").</li>
+        </ol>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;">
+        <div style="font-weight:800;font-size:0.84rem;color:#0f172a;margin-bottom:0.5rem;">
+          <i class="fab fa-apple" style="color:#0f172a;"></i> iOS (Apple iPhone / iPad Safari):
+        </div>
+        <ol style="margin-left:1.25rem;font-size:0.78rem;color:#475569;line-height:1.6;">
+          <li>Open this site in <strong>Safari</strong> browser on your iPhone.</li>
+          <li>Tap the <strong>Share button</strong> (square with upward arrow at bottom).</li>
+          <li>Scroll down and tap <strong>"Add to Home Screen"</strong> (➕).</li>
+          <li>Tap <strong>Add</strong> in top-right. App icon will be added to your home screen!</li>
+        </ol>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeInstallModal()">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════
      🤖 AI ASSISTANCE & SUPPORT TEAM MODAL
@@ -684,8 +776,11 @@ input:checked + .slider:before { transform: translateX(20px); }
     </div>
 
     <div class="nav-actions">
+      <button class="btn btn-install" onclick="openInstallModal()">
+        <i class="fas fa-mobile-alt"></i> Install App
+      </button>
       <button class="btn btn-teal" onclick="openAssistantModal()">
-        <i class="fas fa-robot"></i> AI Assistance & Support Team
+        <i class="fas fa-robot"></i> AI Assistance & Support
       </button>
       <button class="btn btn-outline" onclick="openSettingsModal()">
         <i class="fas fa-sliders-h"></i> Settings
@@ -695,6 +790,20 @@ input:checked + .slider:before { transform: translateX(20px); }
       </button>
     </div>
   </nav>
+
+  <!-- ── Mobile App Quick Installation Banner ── -->
+  <div id="app-install-bottom-bar">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <i class="fas fa-download" style="font-size:1.2rem;color:var(--auraxl-teal);"></i>
+      <div>
+        <div style="font-weight:700;font-size:0.85rem;">Install AuraXL Standalone Mobile App</div>
+        <div style="font-size:0.74rem;color:#94a3b8;">Install on your Android or iPhone for full-screen offline access & alerts.</div>
+      </div>
+    </div>
+    <button class="btn btn-orange" onclick="openInstallModal()" style="padding:0.4rem 0.9rem;font-size:0.78rem;">
+      <i class="fas fa-arrow-down"></i> Get Mobile App
+    </button>
+  </div>
 
   <!-- ── Hero Status ── -->
   <div class="hero">
@@ -850,10 +959,35 @@ const PAGE_SIZE = 25;
 let latestTelemetryData = null;
 let lastKnownStatus = null;
 let pushAlertsEnabled = true;
+let deferredPrompt = null;
 
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+// Capture Android / Chrome PWA install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const directBtn = document.getElementById('modal-pwa-install-btn');
+  if (directBtn) directBtn.style.display = 'inline-flex';
+});
+
+function executePwaInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        showToast('🎉 AuraXL Monitor installed successfully!');
+        closeInstallModal();
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    // If browser prompt is not active, inform user
+    alert("To install directly:\n\n• On Android Chrome: Tap the 3 dots in the top right > 'Install app'.\n• On iPhone Safari: Tap the Share button > 'Add to Home Screen'.");
+  }
 }
 
 function showToast(msg) {
@@ -964,12 +1098,23 @@ async function sendTestEmail() {
   }
 }
 
-// ── Modals ──
+// ── Modals & Background Scroll Lock ──
+function openInstallModal() {
+  document.body.classList.add('modal-open');
+  document.getElementById('install-modal').style.display = 'flex';
+}
+function closeInstallModal() {
+  document.body.classList.remove('modal-open');
+  document.getElementById('install-modal').style.display = 'none';
+}
+
 function openAssistantModal() {
   updateAiAssistantModal();
+  document.body.classList.add('modal-open');
   document.getElementById('assistant-modal').style.display = 'flex';
 }
 function closeAssistantModal() {
+  document.body.classList.remove('modal-open');
   document.getElementById('assistant-modal').style.display = 'none';
 }
 
@@ -991,9 +1136,11 @@ async function openSettingsModal() {
       pushAlertsEnabled = d.push_alerts_enabled !== 'false';
     }
   } catch(e){}
+  document.body.classList.add('modal-open');
   document.getElementById('settings-modal').style.display = 'flex';
 }
 function closeSettingsModal() {
+  document.body.classList.remove('modal-open');
   document.getElementById('settings-modal').style.display = 'none';
 }
 
