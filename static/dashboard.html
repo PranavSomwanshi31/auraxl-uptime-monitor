@@ -402,7 +402,7 @@ tbody td { padding: 0.8rem 1.1rem; font-size: 0.82rem; color: var(--text-main); 
 /* ── MODALS (AI Assistant, Settings, App Install) ── */
 .modal-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  width: 100vw; height: 100vh;
+  width: 100vw; height: 100vh; height: 100dvh;
   background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   z-index: 99999; display: none; align-items: center; justify-content: center;
@@ -414,13 +414,22 @@ tbody td { padding: 0.8rem 1.1rem; font-size: 0.82rem; color: var(--text-main); 
 .modal-card {
   background: #ffffff; width: 100%; max-width: 620px;
   border-radius: var(--radius); box-shadow: var(--shadow-lg);
-  max-height: 88vh; display: flex; flex-direction: column;
+  max-height: 90vh; max-height: 90dvh;
+  display: flex; flex-direction: column;
   overflow: hidden; margin: auto; animation: scaleUp 0.2s ease;
+  position: relative;
 }
 @keyframes scaleUp { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+/* Ensure forms inside modal cards flex properly and don't overflow */
+.modal-card form {
+  display: flex; flex-direction: column;
+  height: 100%; max-height: 100%; min-height: 0; flex: 1 1 auto;
+  overflow: hidden;
+}
+
 .modal-header {
-  padding: 1.25rem 1.5rem;
+  padding: 1.15rem 1.4rem;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
   background: #f8fafc; flex-shrink: 0;
@@ -434,14 +443,35 @@ tbody td { padding: 0.8rem 1.1rem; font-size: 0.82rem; color: var(--text-main); 
   cursor: pointer; padding: 0.2rem; line-height: 1;
 }
 .modal-close:hover { color: var(--text-main); }
+
 .modal-body {
-  padding: 1.5rem; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  flex: 1 1 auto;
+  padding: 1.4rem; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto; min-height: 0;
 }
 .modal-footer {
-  padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+  padding: 0.9rem 1.4rem; border-top: 1px solid var(--border);
   display: flex; justify-content: flex-end; gap: 0.6rem; background: #f8fafc;
-  flex-shrink: 0;
+  flex-shrink: 0; position: sticky; bottom: 0; z-index: 10;
+}
+
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .modal-card {
+    max-height: 94dvh;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    width: 100%;
+    margin: 0;
+  }
+  .modal-body {
+    padding: 1.1rem;
+  }
+  .modal-footer {
+    padding: 0.75rem 1.1rem;
+  }
 }
 
 /* Form inputs */
@@ -966,12 +996,33 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
 
+// Detect if running inside installed Android / iOS standalone app
+function checkStandaloneMode() {
+  const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || 
+                       (window.navigator.standalone === true) || 
+                       document.referrer.includes('android-app://') ||
+                       localStorage.getItem('auraxl_pwa_installed') === 'true';
+  if (isStandalone) {
+    const bottomBar = document.getElementById('app-install-bottom-bar');
+    if (bottomBar) bottomBar.style.display = 'none';
+    document.querySelectorAll('.btn-install').forEach(el => el.style.display = 'none');
+  }
+}
+checkStandaloneMode();
+
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem('auraxl_pwa_installed', 'true');
+  const bottomBar = document.getElementById('app-install-bottom-bar');
+  if (bottomBar) bottomBar.style.display = 'none';
+  document.querySelectorAll('.btn-install').forEach(el => el.style.display = 'none');
+  showToast('🎉 AuraXL Monitor installed successfully!');
+});
+
 // Capture Android / Chrome PWA install prompt
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  const directBtn = document.getElementById('modal-pwa-install-btn');
-  if (directBtn) directBtn.style.display = 'inline-flex';
+  checkStandaloneMode();
 });
 
 function executePwaInstall() {
@@ -979,13 +1030,15 @@ function executePwaInstall() {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
+        localStorage.setItem('auraxl_pwa_installed', 'true');
+        document.getElementById('app-install-bottom-bar')?.remove();
+        document.querySelectorAll('.btn-install').forEach(b => b.remove());
         showToast('🎉 AuraXL Monitor installed successfully!');
         closeInstallModal();
       }
       deferredPrompt = null;
     });
   } else {
-    // If browser prompt is not active, inform user
     alert("To install directly:\n\n• On Android Chrome: Tap the 3 dots in the top right > 'Install app'.\n• On iPhone Safari: Tap the Share button > 'Add to Home Screen'.");
   }
 }
