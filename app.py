@@ -219,7 +219,8 @@ def test_email_alert():
 @app.route("/api/vapid-public-key")
 def vapid_public_key():
     """Return the server VAPID public key for browser subscription."""
-    key = os.environ.get("VAPID_PUBLIC_KEY", "")
+    from push_notifier import get_vapid_public_key
+    key = get_vapid_public_key()
     return jsonify({"publicKey": key})
 
 

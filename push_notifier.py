@@ -11,12 +11,18 @@ import os
 
 log = logging.getLogger(__name__)
 
-# VAPID keys — set as environment variables on Render
-# VAPID_PUBLIC_KEY  → URL-safe base64 public key (used in frontend)
-# VAPID_PRIVATE_KEY → URL-safe base64 private key  (kept server-side)
-VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
-VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+# Default Built-in VAPID Keypair (Works out-of-the-box on Render without manual configuration)
+DEFAULT_VAPID_PUBLIC_KEY = "BEZxsIajyZSwbfh1b8lFmz8i7pNt_dBl5WIXC53R_zl_N-pkRT8axL57KcXSA1M_vjE3Ng-56Yf3I6f3ChZo2G8"
+DEFAULT_VAPID_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgWNQIoZofR+RBv29y\nN4IS+O9THIkg+oAhVWylbyqGPKmhRANCAARGcbCGo8mUsG34dW/JRZs/Iu6Tbf3Q\nZeViFwud0f85fzfqZEU/GsS+eynF0gNTP74xNzYPuemH9yOn9woWaNhv\n-----END PRIVATE KEY-----\n"
+
+VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY") or DEFAULT_VAPID_PUBLIC_KEY
+VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY") or DEFAULT_VAPID_PRIVATE_KEY
 VAPID_CLAIM_EMAIL = os.environ.get("VAPID_CLAIM_EMAIL", "31pranav104@gmail.com")
+
+
+def get_vapid_public_key() -> str:
+    """Return the active VAPID public key."""
+    return VAPID_PUBLIC_KEY
 
 
 def send_push_to_subscription(subscription_info: dict, title: str, body: str, icon: str = "/static/icons/icon-192x192.png") -> bool:
@@ -56,7 +62,7 @@ def send_push_to_subscription(subscription_info: dict, title: str, body: str, ic
         # 410 Gone = subscription expired/revoked — caller should remove it
         if "410" in err_str or "404" in err_str:
             log.info("[Push] Subscription expired (410/404) — should be removed.")
-            raise  # re-raise so caller can clean it up
+            raise
         log.warning("[Push] Push delivery failed: %s", err_str)
         return False
 
