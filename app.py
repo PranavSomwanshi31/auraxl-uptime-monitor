@@ -95,6 +95,21 @@ def dashboard():
     return send_from_directory(STATIC_DIR, "dashboard.html")
 
 
+@app.route("/manifest.json")
+def serve_manifest():
+    return send_from_directory(STATIC_DIR, "manifest.json", mimetype="application/manifest+json")
+
+
+@app.route("/sw.js")
+def serve_sw():
+    return send_from_directory(STATIC_DIR, "sw.js", mimetype="application/javascript")
+
+
+@app.route("/static/<path:path>")
+def serve_static(path):
+    return send_from_directory(STATIC_DIR, path)
+
+
 @app.route("/health")
 def health():
     """

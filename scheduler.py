@@ -15,6 +15,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 import monitor
 import db
+from email_notifier import send_outage_email
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ _scheduler_started = False
 
 
 def _scheduled_check():
-    """Run a monitoring check and persist the result."""
+    """Run a monitoring check, persist the result, and dispatch alerts if down."""
     try:
         result = monitor.run_check(target_url=TARGET_URL)
         db.insert_check(
@@ -39,6 +40,15 @@ def _scheduled_check():
             error_type=result["error_type"],
             error_message=result["error_message"],
         )
+        
+        # Dispatch alert email if website is down
+        if not result["is_up"]:
+            send_outage_email(
+                target_url=result["target_url"],
+                error_type=result["error_type"],
+                error_message=result["error_message"],
+                response_time_ms=result["response_time_ms"]
+            )
     except Exception:
         log.exception("Error in scheduled check")
 
