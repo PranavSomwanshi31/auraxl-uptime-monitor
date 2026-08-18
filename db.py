@@ -47,6 +47,14 @@ CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id         SERIAL PRIMARY KEY,
+    endpoint   TEXT NOT NULL UNIQUE,
+    p256dh     TEXT NOT NULL,
+    auth       TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 """
 
 _SCHEMA_SQLITE = """
@@ -69,6 +77,14 @@ CREATE INDEX IF NOT EXISTS idx_checks_target_url ON checks (target_url);
 CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    endpoint   TEXT NOT NULL UNIQUE,
+    p256dh     TEXT NOT NULL,
+    auth       TEXT NOT NULL,
+    created_at TEXT NOT NULL
 );
 """
 
@@ -324,6 +340,58 @@ def get_consecutive_failures():
         else:
             break
     return count
+
+
+# ---------------------------------------------------------------------------
+# Push Subscriptions
+# ---------------------------------------------------------------------------
+def save_push_subscription(endpoint: str, p256dh: str, auth: str):
+    """Upsert a Web Push subscription."""
+    now = datetime.now(timezone.utc).isoformat()
+    if _USE_POSTGRES:
+        sql = """
+            INSERT INTO push_subscriptions (endpoint, p256dh, auth, created_at)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (endpoint) DO UPDATE SET p256dh = EXCLUDED.p256dh, auth = EXCLUDED.auth
+        """
+        params = (endpoint, p256dh, auth, now)
+    else:
+        sql = """
+            INSERT INTO push_subscriptions (endpoint, p256dh, auth, created_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth
+        """
+        params = (endpoint, p256dh, auth, now)
+    with get_cursor() as cur:
+        cur.execute(sql, params)
+
+
+def get_all_push_subscriptions() -> list:
+    """Return all stored push subscriptions as a list of dicts."""
+    sql = "SELECT endpoint, p256dh, auth FROM push_subscriptions"
+    with get_cursor() as cur:
+        cur.execute(sql)
+        rows = cur.fetchall()
+    result = []
+    for row in rows:
+        r = _row_to_dict(row)
+        result.append({
+            "endpoint": r["endpoint"],
+            "keys": {"p256dh": r["p256dh"], "auth": r["auth"]}
+        })
+    return result
+
+
+def delete_push_subscription(endpoint: str):
+    """Remove an expired/invalid subscription."""
+    if _USE_POSTGRES:
+        sql = "DELETE FROM push_subscriptions WHERE endpoint = %s"
+        params = (endpoint,)
+    else:
+        sql = "DELETE FROM push_subscriptions WHERE endpoint = ?"
+        params = (endpoint,)
+    with get_cursor() as cur:
+        cur.execute(sql, params)
 
 
 def get_setting(key: str, default: str = "") -> str:

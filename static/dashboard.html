@@ -1052,6 +1052,44 @@ function showToast(msg) {
   }
 }
 
+// Show a styled in-app info/error card (replaces ugly browser alert())
+function showInfoCard(title, bodyHtml) {
+  // Remove any existing info card
+  document.getElementById('info-card-overlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'info-card-overlay';
+  overlay.style.cssText = `
+    position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;
+    background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:999999;
+    display:flex;align-items:center;justify-content:center;padding:1rem;
+    animation:fadeIn 0.2s ease;
+  `;
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;max-width:460px;width:100%;
+      box-shadow:0 20px 40px rgba(0,0,0,0.15);overflow:hidden;animation:scaleUp 0.2s ease;">
+      <div style="background:#fef9f0;border-bottom:1px solid #fde68a;padding:1rem 1.25rem;
+        display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:0.95rem;font-weight:800;color:#92400e;">${title}</div>
+        <button onclick="document.getElementById('info-card-overlay')?.remove();document.body.classList.remove('modal-open');"
+          style="background:none;border:none;font-size:1.3rem;color:#94a3b8;cursor:pointer;line-height:1;">&times;</button>
+      </div>
+      <div style="padding:1.2rem 1.25rem;font-size:0.83rem;color:#374151;line-height:1.6;">${bodyHtml}</div>
+      <div style="padding:0.85rem 1.25rem;border-top:1px solid #f1f5f9;text-align:right;">
+        <button onclick="document.getElementById('info-card-overlay')?.remove();document.body.classList.remove('modal-open');"
+          style="background:var(--auraxl-dark-teal);color:#fff;border:none;padding:0.5rem 1.1rem;
+          border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;">Got It</button>
+      </div>
+    </div>
+  `;
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) { overlay.remove(); document.body.classList.remove('modal-open'); }
+  });
+  document.body.classList.add('modal-open');
+  document.body.appendChild(overlay);
+}
+
+
 // ── Audio Chime for WhatsApp-style Popups ──
 function playAlertChime() {
   try {
@@ -1115,11 +1153,103 @@ async function requestPushPermission() {
   return perm;
 }
 
-// Direct Test Mobile Popup Button Handler
+// ── VAPID Web Push Subscription (Real Background Notifications) ──
+let _vapidPublicKey = null;
+
+async function getVapidPublicKey() {
+  if (_vapidPublicKey) return _vapidPublicKey;
+  try {
+    const res = await fetch('/api/vapid-public-key');
+    const j = await res.json();
+    _vapidPublicKey = j.publicKey || null;
+  } catch(e) { _vapidPublicKey = null; }
+  return _vapidPublicKey;
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function subscribeToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    showInfoCard('📱 Not Supported', 'Push notifications require a modern browser (Chrome on Android, or Safari 16.4+ on iOS). Try opening this site in Chrome.');
+    return null;
+  }
+  const vapidKey = await getVapidPublicKey();
+  if (!vapidKey) {
+    showInfoCard('⚙️ Push Not Configured', 'VAPID push keys are not yet set on the server. Please add VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in your Render environment variables and redeploy.');
+    return null;
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      showInfoCard('🔕 Notifications Blocked', 'You blocked notifications for this site. To enable them: tap the lock icon in your browser address bar → Notifications → Allow, then try again.');
+      return null;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidKey)
+    });
+    // Send subscription to server
+    await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sub.toJSON())
+    });
+    return sub;
+  } catch(err) {
+    showInfoCard('❌ Subscription Error', 'Could not subscribe to push notifications: ' + err.message + '. Make sure you are on HTTPS and have granted notification permission.');
+    return null;
+  }
+}
+
+async function unsubscribeFromPush() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      await fetch('/api/push/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: sub.endpoint })
+      });
+      await sub.unsubscribe();
+    }
+  } catch(e) {}
+}
+
+// Test Mobile Popup — now uses real server-side push (works even with app closed)
 async function testMobilePopupAlert() {
-  const perm = await requestPushPermission();
-  triggerPushAlert('AuraXL Alert: Test Notification', '✅ Mobile popup notifications & audio chime are working properly!');
-  showToast('🔔 Test notification sent to screen & phone lockscreen!');
+  const btn = event?.currentTarget;
+  const orig = btn?.innerHTML;
+  if (btn) { btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subscribing...`; }
+
+  const sub = await subscribeToPush();
+  if (!sub) {
+    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+    return;
+  }
+
+  if (btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending push...`;
+  try {
+    const res = await fetch('/api/push/test', { method: 'POST' });
+    const j = await res.json();
+    if (j.success) {
+      showToast('🔔 ' + j.message);
+    } else {
+      showInfoCard('📱 Push Test', j.message);
+    }
+  } catch(e) {
+    // Fallback to in-app popup + audio
+    showPopup('🔔 <strong>Test Alert</strong><br>In-app notifications are working! (Server push may need VAPID keys on Render.)');
+    showToast('🔔 In-app popup test fired!');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  }
 }
 
 // Direct Test Email Button Handler
@@ -1140,11 +1270,14 @@ async function sendTestEmail() {
     if (j.success) {
       showToast('✅ ' + j.message);
     } else {
-      showToast('⚠️ ' + (j.message || 'Could not deliver test email.'));
-      alert('Email Delivery Notice:\n\n' + j.message + '\n\nTo deliver directly to your inbox, open "Advanced Email Delivery Credentials" below and enter your Gmail address and 16-character Google App Password.');
+      // Show styled in-app info card instead of ugly browser alert()
+      showInfoCard(
+        '📧 Email Delivery Notice',
+        j.message + '<br><br><strong>To send real emails:</strong> Open <em>"Advanced Email Delivery Credentials"</em> below ↓ and enter your Gmail address and 16-character Google App Password (Google Account → Security → App Passwords).'
+      );
     }
   } catch(e) {
-    showToast('❌ Error sending test email.');
+    showToast('❌ Error connecting to server.');
   } finally {
     btn.disabled = false;
     btn.innerHTML = orig;
@@ -1215,7 +1348,11 @@ async function saveSettings(e) {
   const smtpPass = document.getElementById('setting-smtp-pass').value;
 
   if (pushToggle) {
-    requestPushPermission();
+    // Subscribe to real server-side push (works when app is closed)
+    subscribeToPush(); // non-blocking, will ask permission and register subscription
+  } else {
+    // Unsubscribe from push
+    unsubscribeFromPush();
   }
   pushAlertsEnabled = pushToggle;
 

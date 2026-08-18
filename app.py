@@ -216,6 +216,58 @@ def test_email_alert():
     })
 
 
+@app.route("/api/vapid-public-key")
+def vapid_public_key():
+    """Return the server VAPID public key for browser subscription."""
+    key = os.environ.get("VAPID_PUBLIC_KEY", "")
+    return jsonify({"publicKey": key})
+
+
+@app.route("/api/push/subscribe", methods=["POST"])
+def push_subscribe():
+    """Save a browser Web Push subscription from the frontend."""
+    data = request.get_json() or {}
+    endpoint = data.get("endpoint", "").strip()
+    keys = data.get("keys", {})
+    p256dh = keys.get("p256dh", "").strip()
+    auth = keys.get("auth", "").strip()
+    if not endpoint or not p256dh or not auth:
+        return jsonify({"success": False, "error": "Missing subscription fields"}), 400
+    db.save_push_subscription(endpoint, p256dh, auth)
+    log.info("[Push] Saved push subscription: %s", endpoint[:60])
+    return jsonify({"success": True, "message": "Push subscription registered."})
+
+
+@app.route("/api/push/unsubscribe", methods=["POST"])
+def push_unsubscribe():
+    """Remove a browser Web Push subscription."""
+    data = request.get_json() or {}
+    endpoint = data.get("endpoint", "").strip()
+    if endpoint:
+        db.delete_push_subscription(endpoint)
+    return jsonify({"success": True})
+
+
+@app.route("/api/push/test", methods=["POST"])
+def push_test():
+    """Send a test push notification to all registered devices."""
+    from push_notifier import send_push_to_all
+    subs = db.get_all_push_subscriptions()
+    if not subs:
+        return jsonify({"success": False, "message": "No push subscriptions registered yet. Please enable push notifications in Settings first."})
+    success, expired = send_push_to_all(
+        subs,
+        title="✅ AuraXL Monitor — Test Alert",
+        body="Push notifications are working! You will be alerted when the site goes down, even with the app closed."
+    )
+    for ep in expired:
+        db.delete_push_subscription(ep)
+    if success > 0:
+        return jsonify({"success": True, "message": f"Test push sent to {success} device(s) successfully!"})
+    else:
+        return jsonify({"success": False, "message": "Push delivery failed. Ensure VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY are set in Render environment variables."})
+
+
 
 @app.route("/api/checks")
 def api_checks():

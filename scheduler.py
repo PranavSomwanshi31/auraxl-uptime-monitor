@@ -54,6 +54,27 @@ def _scheduled_check():
                 response_time_ms=result["response_time_ms"],
                 recipient=alert_email
             )
+
+        # Dispatch server-side Web Push to all subscribed devices if site is down
+        push_enabled = db.get_setting("push_alerts_enabled", "true").lower() == "true"
+        if not result["is_up"] and push_enabled:
+            try:
+                from push_notifier import send_push_to_all
+                subs = db.get_all_push_subscriptions()
+                if subs:
+                    err_short = (result.get("error_message") or "Connection error")[:120]
+                    success, expired = send_push_to_all(
+                        subs,
+                        title="🚨 AuraXL — Site DOWN!",
+                        body=f"{result['target_url']} is UNREACHABLE. Error: {err_short}"
+                    )
+                    for ep in expired:
+                        db.delete_push_subscription(ep)
+                    if success:
+                        log.info("[Push] Outage push sent to %d device(s)", success)
+            except Exception as pe:
+                log.warning("[Push] Push dispatch error: %s", pe)
+
     except Exception:
         log.exception("Error in scheduled check")
 
