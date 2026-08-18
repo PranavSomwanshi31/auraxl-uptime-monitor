@@ -350,7 +350,11 @@ def get_all_settings() -> dict:
         "alert_email": os.environ.get("ALERT_EMAIL", "31pranav104@gmail.com"),
         "monitor_interval_minutes": os.environ.get("MONITOR_INTERVAL_MINUTES", "5"),
         "email_alerts_enabled": os.environ.get("EMAIL_ALERTS_ENABLED", "true"),
-        "push_alerts_enabled": "true"
+        "push_alerts_enabled": "true",
+        "smtp_server": os.environ.get("SMTP_SERVER", "smtp.gmail.com"),
+        "smtp_port": os.environ.get("SMTP_PORT", "587"),
+        "smtp_user": os.environ.get("SMTP_USER", ""),
+        "smtp_password": os.environ.get("SMTP_PASSWORD", "")
     }
     sql = "SELECT key, value FROM settings"
     with get_cursor() as cur:

@@ -9,28 +9,37 @@ import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
+import db
 
 log = logging.getLogger(__name__)
 
-SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER = os.environ.get("SMTP_USER", "")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
-ALERT_EMAIL = os.environ.get("ALERT_EMAIL", "31pranav104@gmail.com")
-EMAIL_ALERTS_ENABLED = os.environ.get("EMAIL_ALERTS_ENABLED", "true").lower() == "true"
+def get_smtp_config():
+    """Reads SMTP configuration from DB settings first, then environment."""
+    return {
+        "server": db.get_setting("smtp_server", os.environ.get("SMTP_SERVER", "smtp.gmail.com")),
+        "port": int(db.get_setting("smtp_port", os.environ.get("SMTP_PORT", "587"))),
+        "user": db.get_setting("smtp_user", os.environ.get("SMTP_USER", "")),
+        "password": db.get_setting("smtp_password", os.environ.get("SMTP_PASSWORD", "")),
+        "alert_email": db.get_setting("alert_email", os.environ.get("ALERT_EMAIL", "31pranav104@gmail.com")),
+        "enabled": db.get_setting("email_alerts_enabled", os.environ.get("EMAIL_ALERTS_ENABLED", "true")).lower() == "true"
+    }
 
-def send_outage_email(target_url: str, error_type: str, error_message: str, response_time_ms: int = None, recipient: str = None) -> bool:
-    """Dispatches a branded HTML email alert."""
-    if not EMAIL_ALERTS_ENABLED:
-        log.info("[Email] Alerts disabled via EMAIL_ALERTS_ENABLED=false")
-        return False
+def send_outage_email(target_url: str, error_type: str, error_message: str, response_time_ms: int = None, recipient: str = None) -> tuple:
+    """
+    Dispatches a branded HTML email alert.
+    Returns (success: bool, message: str).
+    """
+    cfg = get_smtp_config()
 
-    to_addr = recipient or ALERT_EMAIL
+    if not cfg["enabled"]:
+        log.info("[Email] Alerts disabled in settings.")
+        return False, "Email alerts are disabled in Settings."
+
+    to_addr = recipient or cfg["alert_email"]
     if not to_addr:
-        return False
+        return False, "No recipient email address configured."
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    
     subject = f"🚨 CRITICAL ALERT: {target_url} is DOWN ({error_type or 'Outage Detected'})"
     
     html_body = f"""
@@ -100,24 +109,24 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
     </html>
     """
 
-    if not SMTP_USER or not SMTP_PASSWORD:
-        log.warning("[Email] Outage alert simulated for %s (SMTP_USER / SMTP_PASSWORD not set in environment).", to_addr)
-        return True
+    if not cfg["user"] or not cfg["password"]:
+        log.warning("[Email] Outage alert simulated for %s (SMTP Username & App Password not yet configured).", to_addr)
+        return False, "SMTP credentials not configured. Please save your Gmail address & 16-digit App Password in Settings."
 
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = f"AuraXL Monitor <{SMTP_USER}>"
+        msg["From"] = f"AuraXL Monitor <{cfg['user']}>"
         msg["To"] = to_addr
         msg.attach(MIMEText(html_body, "html"))
 
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10) as server:
+        with smtplib.SMTP(cfg["server"], cfg["port"], timeout=12) as server:
             server.starttls()
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.sendmail(SMTP_USER, [to_addr], msg.as_string())
+            server.login(cfg["user"], cfg["password"])
+            server.sendmail(cfg["user"], [to_addr], msg.as_string())
         
         log.info("[Email] Outage alert sent successfully to %s", to_addr)
-        return True
+        return True, f"Email delivered successfully to {to_addr}!"
     except Exception as e:
         log.error("[Email] Failed to send email alert: %s", e)
-        return False
+        return False, f"SMTP Error: {str(e)}"

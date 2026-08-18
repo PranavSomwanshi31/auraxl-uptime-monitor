@@ -177,11 +177,42 @@ def update_settings():
         
     if "push_alerts_enabled" in data:
         db.set_setting("push_alerts_enabled", str(data["push_alerts_enabled"]).lower())
+
+    if "smtp_server" in data:
+        db.set_setting("smtp_server", data["smtp_server"].strip())
+    if "smtp_port" in data:
+        db.set_setting("smtp_port", str(data["smtp_port"]).strip())
+    if "smtp_user" in data:
+        db.set_setting("smtp_user", data["smtp_user"].strip())
+    if "smtp_password" in data and data["smtp_password"].strip():
+        db.set_setting("smtp_password", data["smtp_password"].strip())
         
     return jsonify({
         "success": True, 
         "message": "Settings saved successfully!",
         "data": db.get_all_settings()
+    })
+
+
+@app.route("/api/settings/test-email", methods=["POST"])
+def test_email_alert():
+    """Send an immediate test email alert to verify SMTP delivery."""
+    from email_notifier import send_outage_email
+    data = request.get_json() or {}
+    recipient = data.get("email") or db.get_setting("alert_email", "31pranav104@gmail.com")
+    target_url = db.get_setting("target_url", "https://auraxl.com")
+    
+    success, msg = send_outage_email(
+        target_url=target_url,
+        error_type="TEST VERIFICATION ALERT",
+        error_message="This is a test notification confirming that AuraXL 24/7 Uptime Guardian email alerts are functioning correctly.",
+        response_time_ms=120,
+        recipient=recipient
+    )
+    
+    return jsonify({
+        "success": success,
+        "message": msg
     })
 
 

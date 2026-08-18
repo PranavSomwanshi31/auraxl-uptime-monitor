@@ -353,6 +353,19 @@ tbody td { padding: 0.8rem 1.1rem; font-size: 0.82rem; color: var(--text-main); 
 .error-text { color: var(--red); font-size: 0.76rem; font-weight: 500; }
 .no-data { padding: 2.5rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
 
+/* ── WhatsApp Style Popup Modal ── */
+#whatsapp-modal {
+  position: fixed; top: 1.5rem; right: 1.5rem; max-width: 400px; width: 92%;
+  background: #ffffff; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  border-left: 6px solid #25D366; padding: 1.1rem 1.3rem; z-index: 10000;
+  display: none; animation: slideIn 0.3s ease;
+}
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.wa-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.45rem; }
+.wa-brand { display: flex; align-items: center; gap: 0.45rem; font-weight: 800; font-size: 0.9rem; color: #075E54; }
+.wa-body { font-size: 0.82rem; color: #334155; line-height: 1.45; }
+.wa-close { cursor: pointer; background: none; border: none; color: #94a3b8; font-size: 1.1rem; }
+
 /* ── MODALS (AI Assistant & Settings) ── */
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -365,7 +378,7 @@ tbody td { padding: 0.8rem 1.1rem; font-size: 0.82rem; color: var(--text-main); 
 .modal-card {
   background: #ffffff; width: 100%; max-width: 620px;
   border-radius: var(--radius); box-shadow: var(--shadow-lg);
-  overflow: hidden; max-height: 90vh; display: flex; flex-direction: column;
+  overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;
   animation: scaleUp 0.2s ease;
 }
 @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -431,6 +444,12 @@ tbody td { padding: 0.8rem 1.1rem; font-size: 0.82rem; color: var(--text-main); 
 input:checked + .slider { background-color: var(--auraxl-dark-teal); }
 input:checked + .slider:before { transform: translateX(20px); }
 
+/* Collapsible SMTP details */
+.collapsible-box {
+  background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 1rem; margin-top: 0.5rem; margin-bottom: 1.2rem;
+}
+
 /* AI Assistant Modal Specifics */
 .ai-diagnosis-card {
   background: #f0fdfa; border: 1px solid #99f6e4;
@@ -473,6 +492,17 @@ input:checked + .slider:before { transform: translateX(20px); }
 </style>
 </head>
 <body>
+
+<!-- WhatsApp Style Popup Alert -->
+<div id="whatsapp-modal">
+  <div class="wa-header">
+    <div class="wa-brand"><i class="fab fa-whatsapp text-lg" style="color:#25D366;"></i> <span>AuraXL Guardian Alert</span></div>
+    <button class="wa-close" onclick="closePopup()">&times;</button>
+  </div>
+  <div class="wa-body" id="wa-text">
+    ⚠️ Target <strong>https://auraxl.com</strong> is currently DOWN. Outage detected.
+  </div>
+</div>
 
 <!-- Toast Notification -->
 <div id="toast"></div>
@@ -569,6 +599,42 @@ input:checked + .slider:before { transform: translateX(20px); }
           </label>
         </div>
 
+        <!-- Direct Test Email Verification Button -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;background:#f0fdfa;padding:0.75rem 1rem;border-radius:var(--radius-sm);border:1px solid #99f6e4;">
+          <div style="font-size:0.75rem;color:#0f766e;">
+            <i class="fas fa-envelope-open-text"></i> Test Email Dispatch to your inbox:
+          </div>
+          <button type="button" class="btn btn-outline" id="test-email-btn" onclick="sendTestEmail()" style="font-size:0.72rem;padding:0.3rem 0.65rem;">
+            <i class="fas fa-paper-plane"></i> Send Test Email
+          </button>
+        </div>
+
+        <!-- Expandable SMTP Credentials Setup -->
+        <details class="form-group">
+          <summary style="font-size:0.78rem;font-weight:700;color:var(--auraxl-dark-teal);cursor:pointer;margin-bottom:0.4rem;">
+            ⚙️ Advanced Email Delivery Credentials (SMTP Server / Password)
+          </summary>
+          <div class="collapsible-box">
+            <div class="form-group" style="margin-bottom:0.7rem;">
+              <label class="form-label" style="font-size:0.74rem;">SMTP Server Host</label>
+              <input type="text" id="setting-smtp-server" class="form-input" placeholder="smtp.gmail.com" />
+            </div>
+            <div class="form-group" style="margin-bottom:0.7rem;">
+              <label class="form-label" style="font-size:0.74rem;">SMTP Port (TLS)</label>
+              <input type="number" id="setting-smtp-port" class="form-input" placeholder="587" />
+            </div>
+            <div class="form-group" style="margin-bottom:0.7rem;">
+              <label class="form-label" style="font-size:0.74rem;">Sender Email (SMTP User)</label>
+              <input type="email" id="setting-smtp-user" class="form-input" placeholder="your-email@gmail.com" />
+            </div>
+            <div class="form-group" style="margin-bottom:0.3rem;">
+              <label class="form-label" style="font-size:0.74rem;">Sender App Password (16-character Gmail App Password)</label>
+              <input type="password" id="setting-smtp-pass" class="form-input" placeholder="••••••••••••••••" />
+              <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.2rem;">Generate in Google Account &rarr; Security &rarr; App Passwords.</div>
+            </div>
+          </div>
+        </details>
+
         <div class="toggle-row">
           <div class="toggle-info">
             <div class="toggle-title">📱 Mobile & Device Push Notifications</div>
@@ -578,6 +644,16 @@ input:checked + .slider:before { transform: translateX(20px); }
             <input type="checkbox" id="setting-push-toggle" checked />
             <span class="slider"></span>
           </label>
+        </div>
+
+        <!-- Direct Test Mobile Notification Button -->
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#f0fdf4;padding:0.75rem 1rem;border-radius:var(--radius-sm);border:1px solid #bbf7d0;">
+          <div style="font-size:0.75rem;color:#15803d;">
+            <i class="fab fa-whatsapp"></i> Test WhatsApp-Style Popup & Chime:
+          </div>
+          <button type="button" class="btn btn-outline" onclick="testMobilePopupAlert()" style="font-size:0.72rem;padding:0.3rem 0.65rem;">
+            <i class="fas fa-bell"></i> Test Mobile Popup
+          </button>
         </div>
 
       </div>
@@ -765,13 +841,15 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 <script>
 /* ═══════════════════════════════════════════
-   AuraXL Frontend Engine
+   AuraXL Frontend Engine & Notifications
 ═══════════════════════════════════════════ */
 
 let currentFilter = '';
 let currentPage = 1;
 const PAGE_SIZE = 25;
 let latestTelemetryData = null;
+let lastKnownStatus = null;
+let pushAlertsEnabled = true;
 
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
@@ -783,7 +861,106 @@ function showToast(msg) {
   if (t) {
     t.textContent = msg;
     t.style.display = 'block';
-    setTimeout(() => { t.style.display = 'none'; }, 4000);
+    setTimeout(() => { t.style.display = 'none'; }, 4500);
+  }
+}
+
+// ── Audio Chime for WhatsApp-style Popups ──
+function playAlertChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(750, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + 0.35);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.35);
+  } catch(e){}
+}
+
+function showPopup(text) {
+  const modal = document.getElementById('whatsapp-modal');
+  const txt = document.getElementById('wa-text');
+  if (modal && txt) {
+    txt.innerHTML = text;
+    modal.style.display = 'block';
+    playAlertChime();
+    setTimeout(() => { modal.style.display = 'none'; }, 9000);
+  }
+}
+
+function closePopup() {
+  const modal = document.getElementById('whatsapp-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// Trigger system push & in-app popup alert
+async function triggerPushAlert(title, body) {
+  if (!pushAlertsEnabled) return;
+
+  // 1. In-app popup card with sound
+  showPopup(`🚨 <strong>${title}</strong><br>${body}`);
+
+  // 2. OS / Mobile lockscreen push notification
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification(title, {
+        body: body,
+        icon: '/static/icons/icon-192x192.png',
+        badge: '/static/icons/icon-72x72.png',
+        vibrate: [200, 100, 200]
+      });
+    } catch(e){}
+  }
+}
+
+// Request Push Notification Permission
+async function requestPushPermission() {
+  if (!('Notification' in window)) {
+    showToast('Web Notifications not supported on this browser.');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  return perm;
+}
+
+// Direct Test Mobile Popup Button Handler
+async function testMobilePopupAlert() {
+  const perm = await requestPushPermission();
+  triggerPushAlert('AuraXL Alert: Test Notification', '✅ Mobile popup notifications & audio chime are working properly!');
+  showToast('🔔 Test notification sent to screen & phone lockscreen!');
+}
+
+// Direct Test Email Button Handler
+async function sendTestEmail() {
+  const btn = document.getElementById('test-email-btn');
+  const email = document.getElementById('setting-alert-email').value.trim();
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`;
+
+  try {
+    const res = await fetch('/api/settings/test-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const j = await res.json();
+    if (j.success) {
+      showToast('✅ ' + j.message);
+    } else {
+      showToast('⚠️ ' + (j.message || 'Could not deliver test email.'));
+      alert('Email Delivery Notice:\n\n' + j.message + '\n\nTo deliver directly to your inbox, open "Advanced Email Delivery Credentials" below and enter your Gmail address and 16-character Google App Password.');
+    }
+  } catch(e) {
+    showToast('❌ Error sending test email.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
   }
 }
 
@@ -807,6 +984,11 @@ async function openSettingsModal() {
       if (document.getElementById('setting-interval')) document.getElementById('setting-interval').value = d.monitor_interval_minutes || '5';
       if (document.getElementById('setting-email-toggle')) document.getElementById('setting-email-toggle').checked = d.email_alerts_enabled !== 'false';
       if (document.getElementById('setting-push-toggle')) document.getElementById('setting-push-toggle').checked = d.push_alerts_enabled !== 'false';
+      if (document.getElementById('setting-smtp-server')) document.getElementById('setting-smtp-server').value = d.smtp_server || 'smtp.gmail.com';
+      if (document.getElementById('setting-smtp-port')) document.getElementById('setting-smtp-port').value = d.smtp_port || '587';
+      if (document.getElementById('setting-smtp-user')) document.getElementById('setting-smtp-user').value = d.smtp_user || '';
+      if (document.getElementById('setting-smtp-pass')) document.getElementById('setting-smtp-pass').value = d.smtp_password || '';
+      pushAlertsEnabled = d.push_alerts_enabled !== 'false';
     }
   } catch(e){}
   document.getElementById('settings-modal').style.display = 'flex';
@@ -827,6 +1009,15 @@ async function saveSettings(e) {
   const interval = document.getElementById('setting-interval').value;
   const emailToggle = document.getElementById('setting-email-toggle').checked;
   const pushToggle = document.getElementById('setting-push-toggle').checked;
+  const smtpServer = document.getElementById('setting-smtp-server').value.trim();
+  const smtpPort = document.getElementById('setting-smtp-port').value.trim();
+  const smtpUser = document.getElementById('setting-smtp-user').value.trim();
+  const smtpPass = document.getElementById('setting-smtp-pass').value;
+
+  if (pushToggle) {
+    requestPushPermission();
+  }
+  pushAlertsEnabled = pushToggle;
 
   try {
     const res = await fetch('/api/settings', {
@@ -837,7 +1028,11 @@ async function saveSettings(e) {
         alert_email: alertEmail,
         monitor_interval_minutes: interval,
         email_alerts_enabled: emailToggle.toString(),
-        push_alerts_enabled: pushToggle.toString()
+        push_alerts_enabled: pushToggle.toString(),
+        smtp_server: smtpServer,
+        smtp_port: smtpPort,
+        smtp_user: smtpUser,
+        smtp_password: smtpPass
       })
     });
     const j = await res.json();
@@ -933,6 +1128,12 @@ async function loadStatus() {
     if (!d) return;
 
     latestTelemetryData = d;
+
+    // Detect downtime transitions and fire WhatsApp / push alert
+    if (lastKnownStatus && lastKnownStatus === 'up' && d.status === 'down') {
+      triggerPushAlert('AuraXL Alert: OUTAGE DETECTED', `Target ${d.target_url} is currently DOWN (${d.error_message || 'Connection reset'}).`);
+    }
+    lastKnownStatus = d.status;
 
     // Update target URL link and displays
     if (d.target_url) {
