@@ -196,11 +196,19 @@ def update_settings():
 
 @app.route("/api/settings/test-email", methods=["POST"])
 def test_email_alert():
-    """Send an immediate test email alert to verify SMTP delivery."""
+    """Send an immediate test email alert to verify SMTP delivery to any provided recipient."""
     from email_notifier import send_outage_email
     data = request.get_json() or {}
-    recipient = data.get("email") or db.get_setting("alert_email", "31pranav104@gmail.com")
+    recipient = data.get("email", "").strip() or db.get_setting("alert_email", "").strip()
     target_url = db.get_setting("target_url", "https://auraxl.com")
+    
+    if not recipient:
+        return jsonify({
+            "success": False,
+            "message": "Recipient email address is required. Please enter a valid email address."
+        }), 400
+    
+    log.info("[API] Dispatching test email alert to recipient(s): %s", recipient)
     
     success, msg = send_outage_email(
         target_url=target_url,
@@ -212,8 +220,10 @@ def test_email_alert():
     
     return jsonify({
         "success": success,
-        "message": msg
+        "message": msg,
+        "recipient": recipient
     })
+
 
 
 @app.route("/api/vapid-public-key")

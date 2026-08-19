@@ -415,7 +415,7 @@ def get_all_settings() -> dict:
     """Return all settings as a dict."""
     defaults = {
         "target_url": os.environ.get("TARGET_URL", "https://auraxl.com"),
-        "alert_email": os.environ.get("ALERT_EMAIL", "31pranav104@gmail.com"),
+        "alert_email": os.environ.get("ALERT_EMAIL", ""),
         "monitor_interval_minutes": os.environ.get("MONITOR_INTERVAL_MINUTES", "5"),
         "email_alerts_enabled": os.environ.get("EMAIL_ALERTS_ENABLED", "true"),
         "push_alerts_enabled": "true",

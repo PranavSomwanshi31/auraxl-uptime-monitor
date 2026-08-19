@@ -46,7 +46,7 @@ def get_smtp_config():
         "port": int(db.get_setting("smtp_port", os.environ.get("SMTP_PORT", "465"))),
         "user": db.get_setting("smtp_user", os.environ.get("SMTP_USER", DEFAULT_SMTP_USER)),
         "password": db.get_setting("smtp_password", os.environ.get("SMTP_PASSWORD", DEFAULT_SMTP_PASS)),
-        "alert_email": db.get_setting("alert_email", os.environ.get("ALERT_EMAIL", "31pranav104@gmail.com")),
+        "alert_email": db.get_setting("alert_email", os.environ.get("ALERT_EMAIL", "")),
         "enabled": db.get_setting("email_alerts_enabled", os.environ.get("EMAIL_ALERTS_ENABLED", "true")).lower() == "true"
     }
 

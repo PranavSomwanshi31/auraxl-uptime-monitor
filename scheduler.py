@@ -30,7 +30,7 @@ def _scheduled_check():
     """Run a monitoring check, persist the result, and dispatch alerts if down."""
     target_url = db.get_setting("target_url", os.environ.get("TARGET_URL", "https://auraxl.com"))
     email_enabled = db.get_setting("email_alerts_enabled", "true").lower() == "true"
-    alert_email = db.get_setting("alert_email", os.environ.get("ALERT_EMAIL", "31pranav104@gmail.com"))
+    alert_email = db.get_setting("alert_email", os.environ.get("ALERT_EMAIL", "")).strip()
 
     try:
         result = monitor.run_check(target_url=target_url)
