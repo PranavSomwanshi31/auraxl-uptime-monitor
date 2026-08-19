@@ -1,10 +1,17 @@
 """
 email_notifier.py — Automated Email Alert Engine for AuraXL Uptime Monitor.
-Dispatches formatted HTML alerts when downtime is detected.
+
+Features:
+  - Multi-recipient dispatch (supports comma, semicolon, space, or newline-separated email lists).
+  - IPv4 forced connection architecture (eliminates [Errno 101] Network is unreachable).
+  - Dual-port fallback (Port 465 SSL first, fallback to Port 587 STARTTLS).
 """
 
 import os
+import re
 import smtplib
+import socket
+import ssl
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -15,6 +22,22 @@ log = logging.getLogger(__name__)
 
 DEFAULT_SMTP_USER = "somwanshipranav495@gmail.com"
 DEFAULT_SMTP_PASS = "yvbkynezngoxgqfy"
+
+
+def parse_recipients(addr_string: str) -> list:
+    """Extract all valid email addresses from any delimiter string."""
+    if not addr_string:
+        return []
+    # Split on commas, semicolons, spaces, newlines
+    raw_tokens = re.split(r'[,;\s\n\r]+', addr_string.strip())
+    valid_emails = []
+    for token in raw_tokens:
+        clean = token.strip()
+        if clean and '@' in clean and '.' in clean:
+            if clean not in valid_emails:
+                valid_emails.append(clean)
+    return valid_emails
+
 
 def get_smtp_config():
     """Reads SMTP configuration from DB settings first, then environment / defaults."""
@@ -27,9 +50,60 @@ def get_smtp_config():
         "enabled": db.get_setting("email_alerts_enabled", os.environ.get("EMAIL_ALERTS_ENABLED", "true")).lower() == "true"
     }
 
+
+def connect_smtp_ipv4(host: str, port: int, timeout: int = 12):
+    """
+    Force IPv4 socket resolution before connecting.
+    Prevents Linux cloud container routing failures like:
+    [Errno 101] Network is unreachable (which occurs when IPv6 is attempted first).
+    """
+    last_err = None
+    try:
+        # Query only IPv4 (AF_INET)
+        addr_info = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+        for res in addr_info:
+            af, socktype, proto, canonname, sa = res
+            try:
+                raw_sock = socket.socket(af, socktype, proto)
+                raw_sock.settimeout(timeout)
+                raw_sock.connect(sa)
+
+                if port == 465:
+                    ctx = ssl.create_default_context()
+                    ssl_sock = ctx.wrap_socket(raw_sock, server_hostname=host)
+                    server = smtplib.SMTP_SSL(timeout=timeout)
+                    server.sock = ssl_sock
+                    server.file = smtplib.SSLFakeFile(ssl_sock)
+                    (code, msg) = server.getreply()
+                    if code == 220:
+                        return server
+                else:
+                    server = smtplib.SMTP(timeout=timeout)
+                    server.sock = raw_sock
+                    server.file = smtplib.SSLFakeFile(raw_sock)
+                    (code, msg) = server.getreply()
+                    if code == 220:
+                        server.starttls()
+                        return server
+            except Exception as e:
+                last_err = e
+                continue
+    except Exception as e:
+        last_err = e
+
+    # Fallback to standard connection if custom socket mapping encounters an edge-case
+    if port == 465:
+        return smtplib.SMTP_SSL(host, port, timeout=timeout)
+    else:
+        server = smtplib.SMTP(host, port, timeout=timeout)
+        server.starttls()
+        return server
+
+
 def send_outage_email(target_url: str, error_type: str, error_message: str, response_time_ms: int = None, recipient: str = None) -> tuple:
     """
-    Dispatches a branded HTML email alert using robust SSL/TLS connections.
+    Dispatches a branded HTML email alert to all configured recipient addresses.
+    Supports single or multiple comma-separated emails.
     Returns (success: bool, message: str).
     """
     cfg = get_smtp_config()
@@ -38,15 +112,18 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
         log.info("[Email] Alerts disabled in settings.")
         return False, "Email alerts are disabled in Settings."
 
-    to_addr = recipient or cfg["alert_email"]
-    if not to_addr:
-        return False, "No recipient email address configured."
+    raw_recipients = recipient or cfg["alert_email"]
+    recipient_list = parse_recipients(raw_recipients)
+
+    if not recipient_list:
+        return False, "No valid recipient email address(es) configured."
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     is_test = "TEST" in str(error_type).upper()
+    recipients_display = ", ".join(recipient_list)
     
     if is_test:
-        subject = f"✅ AuraXL Monitor — Verified Alert Delivery to {to_addr}"
+        subject = f"✅ AuraXL Monitor — Verified Alert Delivery to [{recipients_display}]"
     else:
         subject = f"🚨 CRITICAL ALERT: {target_url} is DOWN ({error_type or 'Outage Detected'})"
     
@@ -75,18 +152,22 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
     <body>
       <div class="card">
         <div class="header">
-          <h1>{'✅ AuraXL Guardian Alert Test' if is_test else '🚨 AuraXL Uptime Alert'}</h1>
+          <h1>{'✅ AuraXL Guardian Alert Verification' if is_test else '🚨 AuraXL Uptime Incident Alert'}</h1>
           <p style="margin: 6px 0 0 0; font-size: 14px; color: #fee2e2;">Target Website Availability Guardian</p>
         </div>
         <div class="content">
           <span class="badge">{'STATUS: SYSTEM OPERATIONAL' if is_test else 'STATUS: DOWN / INCIDENT'}</span>
           <p style="font-size: 15px; line-height: 1.5; color: #e2e8f0;">
-            {'This is a verification alert confirming that AuraXL automated email notifications are fully active and connected.' if is_test else f'AuraXL 24/7 Monitoring detected that <strong>{target_url}</strong> is currently unreachable or rejecting connections.'}
+            {'This is an automated verification email confirming that AuraXL incident notifications are fully active and connected.' if is_test else f'AuraXL 24/7 Monitoring detected that <strong>{target_url}</strong> is currently unreachable or rejecting connections.'}
           </p>
           <div class="metric-box">
             <div class="metric-row">
               <span class="metric-label">Target Website:</span>
               <span class="metric-val">{target_url}</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Alert Recipients:</span>
+              <span class="metric-val">{recipients_display}</span>
             </div>
             <div class="metric-row">
               <span class="metric-label">Timestamp:</span>
@@ -98,9 +179,9 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
             </div>
           </div>
           <div class="solution-box">
-            <h3>🤖 Automated AI Monitoring Active</h3>
+            <h3>🤖 Automated AI Monitoring & Recovery Active</h3>
             <p>
-              When an outage occurs, AuraXL dispatches instant alerts and root-cause solutions directly to your inbox.
+              When an outage or SLA degradation occurs, AuraXL dispatches instant root-cause diagnostics to all registered recipient emails.
             </p>
           </div>
         </div>
@@ -118,27 +199,20 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = f"AuraXL Guardian <{user}>"
-    msg["To"] = to_addr
+    msg["To"] = ", ".join(recipient_list)
     msg.attach(MIMEText(html_body, "html"))
 
-    # Strategy: Try Port 465 SSL first (standard for cloud servers/Render), fallback to 587 STARTTLS
     ports_to_try = [465, 587]
     last_err = None
 
     for port in ports_to_try:
         try:
-            if port == 465:
-                with smtplib.SMTP_SSL(cfg["server"], port, timeout=12) as server:
-                    server.login(user, password)
-                    server.sendmail(user, [to_addr], msg.as_string())
-            else:
-                with smtplib.SMTP(cfg["server"], port, timeout=12) as server:
-                    server.starttls()
-                    server.login(user, password)
-                    server.sendmail(user, [to_addr], msg.as_string())
-
-            log.info("[Email] Outage alert sent successfully to %s via Port %d", to_addr, port)
-            return True, f"Email delivered successfully to {to_addr}!"
+            server = connect_smtp_ipv4(cfg["server"], port, timeout=12)
+            server.login(user, password)
+            server.sendmail(user, recipient_list, msg.as_string())
+            server.quit()
+            log.info("[Email] Outage alert sent successfully to %s via Port %d", recipients_display, port)
+            return True, f"Email delivered successfully to {recipients_display}!"
         except Exception as e:
             last_err = e
             log.warning("[Email] Port %d delivery attempt failed: %s", port, e)

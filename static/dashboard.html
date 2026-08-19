@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>AuraXL Guardian — 24/7 Website Availability & Telemetry</title>
-<meta name="description" content="Official 24/7 Uptime Monitoring, Real-time Telemetry, AI Diagnostics & Incident Management for AuraXL" />
+<title>AuraXL Guardian — 24/7 Website Availability, Visual Timeline & Agentic AI</title>
+<meta name="description" content="Official 24/7 Uptime Monitoring, Visual Status Timeline & Agentic AI Auto-Recovery for AuraXL" />
 
 <!-- PWA & Mobile App Settings (Android & iOS) -->
 <link rel="manifest" href="/manifest.json" />
@@ -24,7 +24,7 @@
 
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   AuraXL Professional Design System & Tokens
+   AuraXL Professional Design Tokens
 ═══════════════════════════════════════════════════════════════ */
 :root {
   --auraxl-teal:        #2BC0D4;
@@ -57,6 +57,10 @@
   --status-deg:         #F59E0B;
   --status-deg-bg:      #FFFBEB;
   --status-deg-border:  #FDE68A;
+
+  --status-maint:       #3B82F6;
+  --status-maint-bg:    #EFF6FF;
+  --status-maint-border:#BFDBFE;
 
   --font-main:          'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:          'JetBrains Mono', monospace;
@@ -94,18 +98,12 @@ body.modal-open {
   touch-action: none;
 }
 
-/* ── App Container ── */
 .app-layout {
   max-width: 1180px;
   margin: 0 auto;
   padding: 1.25rem 1.25rem 5.5rem;
 }
-
-@media (min-width: 768px) {
-  .app-layout {
-    padding-bottom: 3rem;
-  }
-}
+@media (min-width: 768px) { .app-layout { padding-bottom: 3rem; } }
 
 /* ── Top Header / Branding ── */
 .app-header {
@@ -120,7 +118,6 @@ body.modal-open {
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 1.25rem;
-  position: relative;
 }
 
 .brand-section {
@@ -128,12 +125,6 @@ body.modal-open {
   align-items: center;
   gap: 1.25rem;
 }
-
-.brand-logo-wrap {
-  display: flex;
-  align-items: center;
-}
-
 .brand-logo {
   height: 48px;
   width: auto;
@@ -141,7 +132,6 @@ body.modal-open {
   object-fit: contain;
   display: block;
 }
-
 .brand-separator {
   width: 1px;
   height: 38px;
@@ -153,7 +143,6 @@ body.modal-open {
   flex-direction: column;
   gap: 0.15rem;
 }
-
 .target-label-row {
   display: flex;
   align-items: center;
@@ -164,7 +153,6 @@ body.modal-open {
   letter-spacing: 0.06em;
   color: var(--auraxl-slate-500);
 }
-
 .target-url-link {
   display: inline-flex;
   align-items: center;
@@ -180,7 +168,6 @@ body.modal-open {
   border: 1px solid rgba(43, 192, 212, 0.25);
   transition: all var(--transition-fast);
 }
-
 .target-url-link:hover {
   background: var(--auraxl-teal);
   color: #ffffff;
@@ -193,7 +180,7 @@ body.modal-open {
   flex-wrap: wrap;
 }
 
-/* ── Professional Action Buttons ── */
+/* ── Buttons ── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -210,7 +197,6 @@ body.modal-open {
   text-decoration: none;
   line-height: 1.2;
 }
-
 .btn-primary {
   background: linear-gradient(135deg, var(--auraxl-teal), var(--auraxl-dark-teal));
   color: #ffffff;
@@ -221,7 +207,6 @@ body.modal-open {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(13, 178, 167, 0.32);
 }
-
 .btn-orange {
   background: linear-gradient(135deg, var(--auraxl-orange), #DE5314);
   color: #ffffff;
@@ -232,7 +217,6 @@ body.modal-open {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(242, 103, 39, 0.32);
 }
-
 .btn-outline {
   background: var(--auraxl-surface);
   border-color: var(--auraxl-slate-200);
@@ -243,7 +227,6 @@ body.modal-open {
   color: var(--auraxl-dark-teal);
   background: var(--auraxl-teal-light);
 }
-
 .btn-dark {
   background: var(--auraxl-slate-900);
   color: #ffffff;
@@ -270,14 +253,14 @@ body.modal-open {
 
 .nav-tab-btn {
   flex: 1;
-  min-width: 140px;
+  min-width: 135px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.65rem 1rem;
+  padding: 0.65rem 0.9rem;
   border-radius: var(--radius-md);
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--auraxl-slate-500);
   background: transparent;
@@ -286,12 +269,10 @@ body.modal-open {
   transition: all var(--transition-normal);
   white-space: nowrap;
 }
-
 .nav-tab-btn:hover {
   color: var(--auraxl-dark-teal);
   background: var(--auraxl-slate-100);
 }
-
 .nav-tab-btn.active {
   background: linear-gradient(135deg, var(--auraxl-teal), var(--auraxl-dark-teal));
   color: #ffffff;
@@ -302,9 +283,7 @@ body.modal-open {
 .mobile-bottom-nav {
   display: none;
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -313,14 +292,9 @@ body.modal-open {
   z-index: 9999;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
 }
-
 @media (max-width: 767px) {
   .app-nav-bar { display: none; }
-  .mobile-bottom-nav {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-  }
+  .mobile-bottom-nav { display: flex; justify-content: space-around; align-items: center; }
 }
 
 .mobile-tab-btn {
@@ -328,8 +302,8 @@ body.modal-open {
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.68rem;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: var(--auraxl-slate-500);
   background: none;
@@ -339,266 +313,21 @@ body.modal-open {
   border-radius: var(--radius-sm);
   flex: 1;
 }
-
-.mobile-tab-btn i { font-size: 1.15rem; }
-.mobile-tab-btn.active {
-  color: var(--auraxl-dark-teal);
-}
-.mobile-tab-btn.active i {
-  color: var(--auraxl-dark-teal);
-  transform: translateY(-1px);
-}
+.mobile-tab-btn i { font-size: 1.1rem; }
+.mobile-tab-btn.active { color: var(--auraxl-dark-teal); }
+.mobile-tab-btn.active i { color: var(--auraxl-dark-teal); transform: translateY(-1px); }
 
 /* ── Section Content Panes ── */
 .section-pane {
   display: none;
   animation: fadeInPane 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.section-pane.active {
-  display: block;
-}
+.section-pane.active { display: block; }
 
 @keyframes fadeInPane {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-/* ── Section 1: Overview Cards & Layout ── */
-.overview-grid {
-  display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-@media (max-width: 860px) { .overview-grid { grid-template-columns: 1fr; } }
-
-.hero-status-card {
-  background: var(--auraxl-surface);
-  border: 1px solid var(--auraxl-slate-200);
-  border-radius: var(--radius-lg);
-  padding: 1.75rem;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 1.25rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-status-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 4px;
-  background: linear-gradient(90deg, var(--auraxl-teal), var(--auraxl-orange));
-}
-
-.status-badge-lg {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.45rem 1.15rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  margin-bottom: 0.85rem;
-}
-
-.status-badge-lg.up {
-  background: var(--status-up-bg);
-  color: var(--status-up);
-  border: 1px solid var(--status-up-border);
-}
-.status-badge-lg.down {
-  background: var(--status-down-bg);
-  color: var(--status-down);
-  border: 1px solid var(--status-down-border);
-}
-.status-badge-lg.degraded {
-  background: var(--status-deg-bg);
-  color: var(--status-deg);
-  border: 1px solid var(--status-deg-border);
-}
-.status-badge-lg.unknown {
-  background: var(--auraxl-slate-100);
-  color: var(--auraxl-slate-500);
-  border: 1px solid var(--auraxl-slate-200);
-}
-
-.status-beacon {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.up .status-beacon {
-  background: var(--status-up);
-  box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
-  animation: pulseGreen 2s infinite;
-}
-.down .status-beacon {
-  background: var(--status-down);
-  box-shadow: 0 0 0 rgba(239, 68, 68, 0.4);
-  animation: pulseRed 2s infinite;
-}
-.degraded .status-beacon {
-  background: var(--status-deg);
-  box-shadow: 0 0 0 rgba(245, 158, 11, 0.4);
-  animation: pulseYellow 2s infinite;
-}
-.unknown .status-beacon { background: var(--auraxl-slate-400); }
-
-@keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-@keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-@keyframes pulseYellow { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
-
-.hero-origin-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--auraxl-slate-500);
-  margin-bottom: 0.25rem;
-}
-.hero-origin-url {
-  font-size: 1.55rem;
-  font-weight: 800;
-  color: var(--auraxl-slate-900);
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-.hero-origin-desc {
-  font-size: 0.88rem;
-  color: var(--auraxl-slate-600);
-  margin-top: 0.4rem;
-}
-
-.hero-footer-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 1rem;
-  border-top: 1px solid var(--auraxl-slate-100);
-  font-size: 0.78rem;
-  color: var(--auraxl-slate-500);
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-/* ── Live Telemetry Quick Grid ── */
-.telemetry-card {
-  background: var(--auraxl-surface);
-  border: 1px solid var(--auraxl-slate-200);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.telemetry-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.1rem;
-}
-
-.tele-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-.tele-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--auraxl-slate-500);
-}
-.tele-val {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--auraxl-slate-900);
-  font-family: var(--font-mono);
-}
-
-/* ── Metric Stat Tiles ── */
-.metrics-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.metric-tile {
-  background: var(--auraxl-surface);
-  border: 1px solid var(--auraxl-slate-200);
-  border-radius: var(--radius-md);
-  padding: 1.2rem;
-  box-shadow: var(--shadow-xs);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-.metric-tile:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-.metric-tile-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--auraxl-slate-500);
-  margin-bottom: 0.4rem;
-}
-.metric-tile-number {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--auraxl-slate-900);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-.metric-tile-sub {
-  font-size: 0.72rem;
-  color: var(--auraxl-slate-500);
-  margin-top: 0.3rem;
-}
-
-.metric-tile-number.teal   { color: var(--auraxl-dark-teal); }
-.metric-tile-number.green  { color: var(--status-up); }
-.metric-tile-number.red    { color: var(--status-down); }
-.metric-tile-number.orange { color: var(--auraxl-orange); }
-
-/* ── SLA Availability Windows ── */
-.sla-window-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-@media (max-width: 680px) { .sla-window-row { grid-template-columns: 1fr; } }
-
-.sla-card {
-  background: var(--auraxl-surface);
-  border: 1px solid var(--auraxl-slate-200);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-xs);
-}
-.sla-card-header {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--auraxl-slate-500);
-  margin-bottom: 0.5rem;
-}
-.sla-pct {
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-.sla-pct.green { color: var(--status-up); }
-.sla-pct.yellow { color: var(--status-deg); }
-.sla-pct.red { color: var(--status-down); }
-.sla-pct.grey { color: var(--auraxl-slate-400); }
 
 /* ── Section Cards (General) ── */
 .content-box {
@@ -609,7 +338,6 @@ body.modal-open {
   box-shadow: var(--shadow-sm);
   margin-bottom: 1.5rem;
 }
-
 .box-header {
   display: flex;
   align-items: center;
@@ -632,232 +360,269 @@ body.modal-open {
   margin-top: 0.2rem;
 }
 
-/* ── Filter Buttons ── */
-.filter-btn-group {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
+/* ── Section 1: Overview Cards ── */
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 }
-.filter-btn {
-  padding: 0.35rem 0.8rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--auraxl-slate-200);
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
+@media (max-width: 860px) { .overview-grid { grid-template-columns: 1fr; } }
+
+.hero-status-card {
   background: var(--auraxl-surface);
-  color: var(--auraxl-slate-600);
-  transition: all var(--transition-fast);
+  border: 1px solid var(--auraxl-slate-200);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  position: relative;
+  overflow: hidden;
 }
-.filter-btn:hover, .filter-btn.active {
-  border-color: var(--auraxl-dark-teal);
-  color: var(--auraxl-dark-teal);
-  background: var(--auraxl-teal-light);
+.hero-status-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--auraxl-teal), var(--auraxl-orange));
 }
 
-/* ── Telemetry Table ── */
-.table-container {
-  overflow-x: auto;
+.status-badge-lg {
+  display: inline-flex; align-items: center; gap: 0.65rem;
+  padding: 0.45rem 1.15rem; border-radius: 999px; font-size: 0.85rem;
+  font-weight: 800; letter-spacing: 0.03em; margin-bottom: 0.85rem;
+}
+.status-badge-lg.up       { background: var(--status-up-bg);   color: var(--status-up);   border: 1px solid var(--status-up-border); }
+.status-badge-lg.down     { background: var(--status-down-bg); color: var(--status-down); border: 1px solid var(--status-down-border); }
+.status-badge-lg.degraded { background: var(--status-deg-bg);  color: var(--status-deg);  border: 1px solid var(--status-deg-border); }
+.status-badge-lg.unknown  { background: var(--auraxl-slate-100); color: var(--auraxl-slate-500); border: 1px solid var(--auraxl-slate-200); }
+
+.status-beacon { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.up .status-beacon       { background: var(--status-up);   box-shadow: 0 0 0 rgba(16,185,129,0.4); animation: pulseGreen 2s infinite; }
+.down .status-beacon     { background: var(--status-down); box-shadow: 0 0 0 rgba(239,68,68,0.4); animation: pulseRed 2s infinite; }
+.degraded .status-beacon { background: var(--status-deg);  box-shadow: 0 0 0 rgba(245,158,11,0.4); animation: pulseYellow 2s infinite; }
+.unknown .status-beacon  { background: var(--auraxl-slate-400); }
+
+@keyframes pulseGreen  { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@keyframes pulseRed    { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@keyframes pulseYellow { 0% { box-shadow: 0 0 0 0 rgba(245,158,11,0.7); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+.hero-origin-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--auraxl-slate-500); margin-bottom: 0.25rem; }
+.hero-origin-url   { font-size: 1.55rem; font-weight: 800; color: var(--auraxl-slate-900); letter-spacing: -0.02em; line-height: 1.2; }
+.hero-origin-desc  { font-size: 0.88rem; color: var(--auraxl-slate-600); margin-top: 0.4rem; }
+
+.hero-footer-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 1rem; border-top: 1px solid var(--auraxl-slate-100);
+  font-size: 0.78rem; color: var(--auraxl-slate-500); flex-wrap: wrap; gap: 0.5rem;
+}
+
+.telemetry-card {
+  background: var(--auraxl-surface); border: 1px solid var(--auraxl-slate-200);
+  border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm);
+}
+.telemetry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.tele-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.tele-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--auraxl-slate-500); }
+.tele-val   { font-size: 1rem; font-weight: 800; color: var(--auraxl-slate-900); font-family: var(--font-mono); }
+
+.metrics-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.metric-tile {
+  background: var(--auraxl-surface); border: 1px solid var(--auraxl-slate-200);
+  border-radius: var(--radius-md); padding: 1.2rem; box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.metric-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.metric-tile-title  { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--auraxl-slate-500); margin-bottom: 0.4rem; }
+.metric-tile-number { font-size: 1.5rem; font-weight: 800; color: var(--auraxl-slate-900); line-height: 1.1; letter-spacing: -0.02em; }
+.metric-tile-sub    { font-size: 0.72rem; color: var(--auraxl-slate-500); margin-top: 0.3rem; }
+
+.metric-tile-number.teal   { color: var(--auraxl-dark-teal); }
+.metric-tile-number.green  { color: var(--status-up); }
+.metric-tile-number.red    { color: var(--status-down); }
+.metric-tile-number.orange { color: var(--auraxl-orange); }
+
+.sla-window-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+@media (max-width: 680px) { .sla-window-row { grid-template-columns: 1fr; } }
+.sla-card {
+  background: var(--auraxl-surface); border: 1px solid var(--auraxl-slate-200);
+  border-radius: var(--radius-md); padding: 1.25rem; box-shadow: var(--shadow-xs);
+}
+.sla-card-header { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--auraxl-slate-500); margin-bottom: 0.5rem; }
+.sla-pct { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em; }
+.sla-pct.green  { color: var(--status-up); }
+.sla-pct.yellow { color: var(--status-deg); }
+.sla-pct.red    { color: var(--status-down); }
+.sla-pct.grey   { color: var(--auraxl-slate-400); }
+
+/* ── Section 2: VISUAL TIMELINE & AGENTIC AI ── */
+.timeline-strip-container {
+  background: var(--auraxl-slate-900);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.timeline-bar {
+  display: flex;
+  height: 36px;
+  border-radius: 8px;
+  overflow: hidden;
+  gap: 2px;
+  background: #1E293B;
+  padding: 3px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.timeline-block {
+  flex: 1;
+  border-radius: 4px;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+  position: relative;
+}
+.timeline-block:hover {
+  transform: scaleY(1.18);
+  z-index: 10;
+  filter: brightness(1.25);
+}
+
+.timeline-block.uptime      { background: #10B981; }
+.timeline-block.downtime    { background: #EF4444; }
+.timeline-block.degraded    { background: #F59E0B; }
+.timeline-block.maintenance { background: #3B82F6; }
+
+.timeline-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.85rem;
+  font-size: 0.76rem;
+  color: #94A3B8;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.legend-dot {
+  width: 10px; height: 10px; border-radius: 3px;
+}
+
+/* Agentic AI Grid */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+.agent-card {
+  background: var(--auraxl-surface);
   border: 1px solid var(--auraxl-slate-200);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.agent-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+}
+.agent-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+.agent-icon.recovery { background: #E0F2FE; color: #0284C7; }
+.agent-icon.trend    { background: #FEF3C7; color: #D97706; }
+.agent-icon.report   { background: #F3E8FF; color: #7E22CE; }
+
+.agent-title { font-size: 0.95rem; font-weight: 800; color: var(--auraxl-slate-900); }
+.agent-role  { font-size: 0.72rem; color: var(--auraxl-slate-500); }
+
+.agent-body-text {
+  font-size: 0.82rem; color: var(--auraxl-slate-700); line-height: 1.55;
+  background: #F8FAFC; border: 1px solid var(--auraxl-slate-200);
+  border-radius: var(--radius-sm); padding: 0.9rem; margin-bottom: 1rem;
+}
+
+/* ── Section 3: Telemetry History Table ── */
+.table-container {
+  overflow-x: auto; border: 1px solid var(--auraxl-slate-200);
   border-radius: var(--radius-md);
 }
-table.tele-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 680px;
-}
+table.tele-table { width: 100%; border-collapse: collapse; min-width: 680px; }
 table.tele-table thead th {
-  background: var(--auraxl-slate-100);
-  padding: 0.85rem 1.1rem;
-  text-align: left;
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--auraxl-slate-600);
+  background: var(--auraxl-slate-100); padding: 0.85rem 1.1rem;
+  text-align: left; font-size: 0.7rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--auraxl-slate-600);
   border-bottom: 1px solid var(--auraxl-slate-200);
 }
-table.tele-table tbody tr {
-  border-bottom: 1px solid var(--auraxl-slate-200);
-  transition: background var(--transition-fast);
-}
+table.tele-table tbody tr { border-bottom: 1px solid var(--auraxl-slate-200); transition: background var(--transition-fast); }
 table.tele-table tbody tr:last-child { border-bottom: none; }
 table.tele-table tbody tr:hover { background: #f8fafc; }
-table.tele-table tbody td {
-  padding: 0.85rem 1.1rem;
-  font-size: 0.84rem;
-  color: var(--auraxl-slate-800);
-  vertical-align: middle;
-}
+table.tele-table tbody td { padding: 0.85rem 1.1rem; font-size: 0.84rem; color: var(--auraxl-slate-800); vertical-align: middle; }
 .td-mono { font-family: var(--font-mono); font-size: 0.78rem; }
 
 .status-badge-sm {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.25rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 800;
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.72rem; font-weight: 800;
 }
 .status-badge-sm.up       { background: var(--status-up-bg);   color: var(--status-up); }
 .status-badge-sm.down     { background: var(--status-down-bg); color: var(--status-down); }
 .status-badge-sm.degraded { background: var(--status-deg-bg);  color: var(--status-deg); }
 
-.latency-meter {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-.latency-track {
-  width: 65px;
-  height: 5px;
-  background: var(--auraxl-slate-200);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.latency-bar {
-  height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--auraxl-teal), var(--auraxl-dark-teal));
-}
+.latency-meter { display: flex; align-items: center; gap: 0.45rem; }
+.latency-track { width: 65px; height: 5px; background: var(--auraxl-slate-200); border-radius: 3px; overflow: hidden; }
+.latency-bar   { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--auraxl-teal), var(--auraxl-dark-teal)); }
 
-/* ── Section 3: AI Diagnostics & Support ── */
-.ai-card-highlight {
-  background: linear-gradient(135deg, #F0FDFA, #E6FFFA);
-  border: 1px solid #99F6E4;
-  border-radius: var(--radius-md);
-  padding: 1.35rem;
-  margin-bottom: 1.25rem;
-}
-.ai-fix-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-@media (max-width: 768px) { .ai-fix-grid { grid-template-columns: 1fr; } }
-
-.fix-box {
-  background: var(--auraxl-surface);
-  border: 1px solid var(--auraxl-slate-200);
-  border-radius: var(--radius-md);
-  padding: 1.2rem;
-}
-.fix-box-title {
-  font-size: 0.88rem;
-  font-weight: 800;
-  color: var(--auraxl-slate-900);
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 0.45rem;
-}
-.fix-box-desc {
-  font-size: 0.8rem;
-  color: var(--auraxl-slate-600);
-  line-height: 1.55;
-}
-
-.ticket-console {
-  background: var(--auraxl-slate-900);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: #A5F3FC;
-  position: relative;
-  white-space: pre-wrap;
-  line-height: 1.6;
-}
-.copy-btn-floating {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-}
-
-/* ── Section 4: Notifications & Channels ── */
+/* ── Section 4: Alerts & Multi-Email ── */
 .channel-card {
-  border: 1px solid var(--auraxl-slate-200);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
+  border: 1px solid var(--auraxl-slate-200); border-radius: var(--radius-md);
+  padding: 1.25rem; margin-bottom: 1rem; background: #ffffff;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
 }
-.channel-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+.channel-info { display: flex; align-items: center; gap: 1rem; }
 .channel-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.35rem;
-  flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.35rem; flex-shrink: 0;
 }
 .channel-icon.whatsapp { background: #DCFCE7; color: #15803D; }
 .channel-icon.email    { background: #E0F2FE; color: #0284C7; }
 
 /* ── Section 5: Settings Forms ── */
 .form-field { margin-bottom: 1.25rem; }
-.form-field label {
-  display: block;
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: var(--auraxl-slate-800);
-  margin-bottom: 0.35rem;
-}
-.form-field .field-hint {
-  font-size: 0.74rem;
-  color: var(--auraxl-slate-500);
-  margin-bottom: 0.45rem;
-}
+.form-field label { display: block; font-size: 0.82rem; font-weight: 800; color: var(--auraxl-slate-800); margin-bottom: 0.35rem; }
+.form-field .field-hint { font-size: 0.74rem; color: var(--auraxl-slate-500); margin-bottom: 0.45rem; }
 .input-control, .select-control {
-  width: 100%;
-  padding: 0.65rem 0.95rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--auraxl-slate-200);
-  font-family: var(--font-main);
-  font-size: 0.88rem;
-  color: var(--auraxl-slate-800);
-  background: #ffffff;
+  width: 100%; padding: 0.65rem 0.95rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--auraxl-slate-200); font-family: var(--font-main);
+  font-size: 0.88rem; color: var(--auraxl-slate-800); background: #ffffff;
   transition: all var(--transition-fast);
 }
 .input-control:focus, .select-control:focus {
-  outline: none;
-  border-color: var(--auraxl-teal);
+  outline: none; border-color: var(--auraxl-teal);
   box-shadow: 0 0 0 3px rgba(43, 192, 212, 0.18);
 }
 
 .switch-toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.15rem;
-  background: var(--auraxl-slate-100);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--auraxl-slate-200);
-  margin-bottom: 1rem;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.15rem; background: var(--auraxl-slate-100);
+  border-radius: var(--radius-md); border: 1px solid var(--auraxl-slate-200); margin-bottom: 1rem;
 }
 .switch-info-title { font-size: 0.85rem; font-weight: 800; color: var(--auraxl-slate-800); }
 .switch-info-desc  { font-size: 0.74rem; color: var(--auraxl-slate-500); }
 
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 46px;
-  height: 26px;
-  flex-shrink: 0;
-}
+.toggle-switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
 .toggle-switch input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
   position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
@@ -870,99 +635,52 @@ table.tele-table tbody td {
 input:checked + .toggle-slider { background-color: var(--auraxl-dark-teal); }
 input:checked + .toggle-slider:before { transform: translateX(20px); }
 
-/* ── WhatsApp Style Floating Alert Banner ── */
+/* Floating WhatsApp Alert */
 #whatsapp-modal {
-  position: fixed;
-  top: 1.5rem;
-  right: 1.5rem;
-  max-width: 410px;
-  width: 90%;
-  background: #ffffff;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  border-left: 6px solid #25D366;
-  padding: 1.1rem 1.3rem;
-  z-index: 100000;
-  display: none;
-  animation: slideInRight 0.3s ease;
+  position: fixed; top: 1.5rem; right: 1.5rem; max-width: 410px; width: 90%;
+  background: #ffffff; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+  border-left: 6px solid #25D366; padding: 1.1rem 1.3rem; z-index: 100000;
+  display: none; animation: slideInRight 0.3s ease;
 }
 @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-/* ── In-App Toast & Modals ── */
 #toast {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: var(--auraxl-slate-900);
-  color: #ffffff;
-  padding: 0.8rem 1.35rem;
-  border-radius: var(--radius-md);
-  font-size: 0.84rem;
-  font-weight: 700;
-  display: none;
-  z-index: 100000;
-  box-shadow: var(--shadow-lg);
-  border-left: 4px solid var(--auraxl-teal);
+  position: fixed; bottom: 2rem; right: 2rem; background: var(--auraxl-slate-900);
+  color: #ffffff; padding: 0.8rem 1.35rem; border-radius: var(--radius-md);
+  font-size: 0.84rem; font-weight: 700; display: none; z-index: 100000;
+  box-shadow: var(--shadow-lg); border-left: 4px solid var(--auraxl-teal);
   animation: slideUpToast 0.3s ease;
 }
 @keyframes slideUpToast { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-/* ── App Install Modal ── */
 .modal-backdrop {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw; height: 100vh; height: 100dvh;
-  background: rgba(15, 23, 42, 0.68);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 99999;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.68); backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px); z-index: 99999;
+  display: none; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto;
 }
 .modal-window {
-  background: #ffffff;
-  width: 100%;
-  max-width: 580px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  max-height: 92vh;
-  max-height: 92dvh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  margin: auto;
+  background: #ffffff; width: 100%; max-width: 580px;
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  max-height: 92vh; max-height: 92dvh; display: flex; flex-direction: column;
+  overflow: hidden; margin: auto;
 }
 .modal-header-bar {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--auraxl-slate-200);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #f8fafc;
-  flex-shrink: 0;
+  padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--auraxl-slate-200);
+  display: flex; align-items: center; justify-content: space-between;
+  background: #f8fafc; flex-shrink: 0;
 }
-.modal-body-scroll {
-  padding: 1.5rem;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  flex: 1 1 auto;
-}
-.modal-footer-bar {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--auraxl-slate-200);
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.6rem;
-  background: #f8fafc;
-  flex-shrink: 0;
+.modal-body-scroll { padding: 1.5rem; overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1 1 auto; }
+.modal-footer-bar  {
+  padding: 1rem 1.5rem; border-top: 1px solid var(--auraxl-slate-200);
+  display: flex; justify-content: flex-end; gap: 0.6rem; background: #f8fafc; flex-shrink: 0;
 }
 </style>
 </head>
 <body>
 
-<!-- WhatsApp Style In-App Alert Popup -->
+<!-- WhatsApp In-App Popup -->
 <div id="whatsapp-modal">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.45rem;">
     <div style="display:flex;align-items:center;gap:0.45rem;font-weight:800;font-size:0.9rem;color:#075E54;">
@@ -997,14 +715,12 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
         <p style="font-size:0.8rem;color:var(--auraxl-slate-500);margin-top:0.2rem;">Fast, full-screen offline-ready telemetry for Android &amp; iOS</p>
       </div>
 
-      <!-- Android 1-Click Install Button -->
       <div id="direct-install-container" style="margin-bottom:1.25rem;">
         <button class="btn btn-orange" id="modal-pwa-install-btn" onclick="executePwaInstall()" style="width:100%;padding:0.75rem;font-size:0.9rem;">
           <i class="fas fa-download"></i> Tap to Install App on Device (Android Chrome)
         </button>
       </div>
 
-      <!-- Android Chrome Instructions -->
       <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
         <div style="font-weight:800;font-size:0.85rem;color:#0F172A;margin-bottom:0.4rem;">
           <i class="fab fa-android" style="color:#10B981;"></i> Android (Google Chrome):
@@ -1015,7 +731,6 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
         </ol>
       </div>
 
-      <!-- iOS Safari Instructions -->
       <div style="background:#F8FAFC;border:1px solid var(--auraxl-slate-200);border-radius:var(--radius-sm);padding:1rem;">
         <div style="font-weight:800;font-size:0.85rem;color:#0F172A;margin-bottom:0.4rem;">
           <i class="fab fa-apple" style="color:#0F172A;"></i> iPhone / iPad (Safari):
@@ -1039,7 +754,7 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
 ═══════════════════════════════════════════════════════════════ -->
 <div class="app-layout">
 
-  <!-- ── Top Header Bar (Branding + Active Origin Target) ── -->
+  <!-- Top Header Bar -->
   <header class="app-header">
     <div class="brand-section">
       <div class="brand-logo-wrap">
@@ -1068,19 +783,19 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
     </div>
   </header>
 
-  <!-- ── Section Navigation Bar (Desktop & Tablet Pill Bar) ── -->
+  <!-- Section Navigation Bar (Desktop & Tablet Pill Bar) -->
   <nav class="app-nav-bar" id="desktop-nav">
     <button class="nav-tab-btn active" onclick="switchTab('overview')">
       <i class="fas fa-chart-pie"></i> <span>Overview (Home)</span>
     </button>
+    <button class="nav-tab-btn" onclick="switchTab('timeline')">
+      <i class="fas fa-timeline"></i> <span>Visual Timeline &amp; Agentic AI</span>
+    </button>
     <button class="nav-tab-btn" onclick="switchTab('history')">
       <i class="fas fa-list-check"></i> <span>Telemetry History</span>
     </button>
-    <button class="nav-tab-btn" onclick="switchTab('diagnostics')">
-      <i class="fas fa-robot"></i> <span>AI Diagnostics &amp; Fix</span>
-    </button>
     <button class="nav-tab-btn" onclick="switchTab('alerts')">
-      <i class="fas fa-bell"></i> <span>Alerts &amp; Channels</span>
+      <i class="fas fa-bell"></i> <span>Alerts &amp; Multi-Email</span>
     </button>
     <button class="nav-tab-btn" onclick="switchTab('settings')">
       <i class="fas fa-sliders"></i> <span>Settings &amp; Config</span>
@@ -1140,9 +855,9 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
         </div>
 
         <div style="margin-top:1.25rem;padding-top:0.85rem;border-top:1px solid var(--auraxl-slate-100);display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:0.74rem;color:var(--auraxl-slate-500);">Troubleshoot target issues:</span>
-          <button class="btn btn-outline" onclick="switchTab('diagnostics')" style="font-size:0.72rem;padding:0.3rem 0.65rem;">
-            <i class="fas fa-robot"></i> View Root Cause
+          <span style="font-size:0.74rem;color:var(--auraxl-slate-500);">Autonomous Recovery &amp; Analysis:</span>
+          <button class="btn btn-outline" onclick="switchTab('timeline')" style="font-size:0.72rem;padding:0.3rem 0.65rem;">
+            <i class="fas fa-robot"></i> Open Agentic AI Window
           </button>
         </div>
       </div>
@@ -1200,7 +915,142 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
 
 
   <!-- ═══════════════════════════════════════════════════════════
-       SECTION 2: 📜 TELEMETRY & AUDIT HISTORY
+       SECTION 2: ⏱️ VISUAL STATUS TIMELINE & AGENTIC AI SUITE
+       (Dedicated window for Timeline, Recovery, Trends & Reports)
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="section-pane" id="pane-timeline">
+    
+    <!-- 1. Interactive Visual Status Timeline Strip -->
+    <div class="content-box">
+      <div class="box-header">
+        <div>
+          <div class="box-title"><i class="fas fa-timeline" style="color:var(--auraxl-dark-teal);"></i> 24/7 Visual Status &amp; Incident Timeline</div>
+          <div class="box-subtitle">Interactive chronological state visualizer showing continuous blocks of Uptime, Downtime, Degraded Latency, and Maintenance.</div>
+        </div>
+
+        <div class="filter-btn-group">
+          <button class="filter-btn active" onclick="loadTimeline(24, this)">Last 24 Hours</button>
+          <button class="filter-btn" onclick="loadTimeline(168, this)">Last 7 Days</button>
+          <button class="filter-btn" onclick="loadTimeline(720, this)">Last 30 Days</button>
+        </div>
+      </div>
+
+      <!-- Timeline Strip -->
+      <div class="timeline-strip-container">
+        <div class="timeline-bar" id="visual-timeline-bar">
+          <!-- Dynamic Timeline Blocks Rendered Here -->
+        </div>
+
+        <div class="timeline-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#10B981;"></div> <span>Uptime (Healthy)</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#EF4444;"></div> <span>Downtime (Outages)</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F59E0B;"></div> <span>Degraded Latency</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3B82F6;"></div> <span>Scheduled Maintenance</span></div>
+          <span style="font-size:0.72rem;color:#64748B;"><i class="fas fa-hand-pointer"></i> Tap any block to inspect details</span>
+        </div>
+      </div>
+
+      <div id="timeline-detail-box" style="display:none;background:#F8FAFC;border:1px solid var(--auraxl-slate-200);border-radius:var(--radius-sm);padding:0.85rem 1.1rem;margin-top:1rem;font-size:0.82rem;"></div>
+    </div>
+
+    <!-- 2. Agentic AI Suite (3 Autonomous Agents) -->
+    <div class="box-header" style="margin-top:2rem;">
+      <div>
+        <div class="box-title"><i class="fas fa-robot" style="color:var(--auraxl-orange);"></i> Autonomous Agentic AI Suite</div>
+        <div class="box-subtitle">Role of Agentic AI: Autonomous Root-Cause Recovery, Predictive Trend Forecasting, and Executive SLA Auditing.</div>
+      </div>
+      <button class="btn btn-primary" onclick="triggerDeepRecoveryAgent()" style="font-size:0.78rem;">
+        <i class="fas fa-play"></i> Run Autonomous Diagnosis
+      </button>
+    </div>
+
+    <div class="agent-grid">
+      <!-- Agent 1: Auto-Recovery Agent -->
+      <div class="agent-card">
+        <div>
+          <div class="agent-card-header">
+            <div class="agent-icon recovery"><i class="fas fa-shield-halved"></i></div>
+            <div>
+              <div class="agent-title">Auto-Recovery &amp; Diagnostic Agent</div>
+              <div class="agent-role">Multi-Layer Root Cause &amp; Remediation Plan</div>
+            </div>
+          </div>
+
+          <div class="agent-body-text" id="agent-recovery-output">
+            <div style="font-weight:700;color:var(--auraxl-dark-teal);margin-bottom:0.3rem;"><i class="fas fa-network-wired"></i> Multi-Layer Origin Probing:</div>
+            <div>• DNS Resolution: <strong id="diag-dns-status">Analyzing...</strong></div>
+            <div>• TCP Port 443: <strong id="diag-tcp-status">Analyzing...</strong></div>
+            <div>• SSL/TLS Handshake: <strong id="diag-ssl-status">Analyzing...</strong></div>
+            <div style="margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid #E2E8F0;" id="diag-root-cause-summary">
+              Analyzing origin connectivity...
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-outline" onclick="copySupportTicket()" style="width:100%;font-size:0.78rem;">
+          <i class="fas fa-copy"></i> Copy Hosting Support Ticket
+        </button>
+      </div>
+
+      <!-- Agent 2: Trend & Anomaly Forecast Agent -->
+      <div class="agent-card">
+        <div>
+          <div class="agent-card-header">
+            <div class="agent-icon trend"><i class="fas fa-chart-line"></i></div>
+            <div>
+              <div class="agent-title">Trend &amp; Anomaly Forecast Agent</div>
+              <div class="agent-role">Latency Drift, MTTR &amp; Risk Forecasting</div>
+            </div>
+          </div>
+
+          <div class="agent-body-text" id="agent-trend-output">
+            <div style="font-weight:700;color:#D97706;margin-bottom:0.3rem;"><i class="fas fa-wave-square"></i> Predictive SLA Telemetry:</div>
+            <div>• Health Score: <strong id="trend-health-score" style="color:var(--auraxl-dark-teal);">— / 100</strong></div>
+            <div>• Latency Trend: <strong id="trend-latency-status">—</strong></div>
+            <div>• Outage Risk: <strong id="trend-risk-level">—</strong></div>
+            <div style="margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid #E2E8F0;" id="trend-summary-text">
+              Computing rolling latency averages...
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-outline" onclick="loadAgentTrends()" style="width:100%;font-size:0.78rem;">
+          <i class="fas fa-rotate"></i> Refresh Trend Analysis
+        </button>
+      </div>
+
+      <!-- Agent 3: Executive Report Agent -->
+      <div class="agent-card">
+        <div>
+          <div class="agent-card-header">
+            <div class="agent-icon report"><i class="fas fa-file-contract"></i></div>
+            <div>
+              <div class="agent-title">Executive Audit &amp; Report Agent</div>
+              <div class="agent-role">SLA Compliance &amp; Reliability Audit</div>
+            </div>
+          </div>
+
+          <div class="agent-body-text" id="agent-report-output">
+            <div style="font-weight:700;color:#7E22CE;margin-bottom:0.3rem;"><i class="fas fa-award"></i> Executive Reliability Grade:</div>
+            <div>• SLA Rating: <strong id="report-sla-grade" style="color:#7E22CE;">—</strong></div>
+            <div>• Compliance: <strong id="report-compliance-status">—</strong></div>
+            <div style="margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid #E2E8F0;font-size:0.76rem;" id="report-summary-text">
+              Compiling SLA compliance matrix...
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-outline" onclick="copyExecutiveReport()" style="width:100%;font-size:0.78rem;">
+          <i class="fas fa-clipboard-check"></i> Copy Executive Audit Report
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 3: 📜 TELEMETRY & AUDIT HISTORY
   ═══════════════════════════════════════════════════════════ -->
   <section class="section-pane" id="pane-history">
     
@@ -1208,7 +1058,7 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
       <div class="box-header">
         <div>
           <div class="box-title"><i class="fas fa-list-check" style="color:var(--auraxl-dark-teal);"></i> 24/7 Telemetry Logs &amp; Audit Trail</div>
-          <div class="box-subtitle">Continuous background monitoring history saved safely in PostgreSQL/SQLite database even when the app is closed.</div>
+          <div class="box-subtitle">Continuous background monitoring history saved safely in PostgreSQL database even when the app is closed.</div>
         </div>
 
         <div class="filter-btn-group">
@@ -1242,78 +1092,15 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
 
 
   <!-- ═══════════════════════════════════════════════════════════
-       SECTION 3: 🤖 AI DIAGNOSTICS & INCIDENT SOLUTIONS
-  ═══════════════════════════════════════════════════════════ -->
-  <section class="section-pane" id="pane-diagnostics">
-
-    <div class="content-box">
-      <div class="box-header">
-        <div>
-          <div class="box-title"><i class="fas fa-robot" style="color:var(--auraxl-dark-teal);"></i> AI Diagnostic Assistant &amp; Root Cause Solutions</div>
-          <div class="box-subtitle">Plain-English outage explanations, step-by-step non-coding solutions, and copyable hosting support tickets.</div>
-        </div>
-        <button class="btn btn-outline" onclick="loadAll()" style="font-size:0.75rem;">
-          <i class="fas fa-sync-alt"></i> Refresh Diagnostic
-        </button>
-      </div>
-
-      <!-- Live Diagnosis Banner -->
-      <div class="ai-card-highlight">
-        <div style="font-size:0.95rem;font-weight:800;color:#0F766E;margin-bottom:0.4rem;" id="ai-diag-heading">
-          Target Status Diagnosis
-        </div>
-        <div style="font-size:0.86rem;color:#134E4A;line-height:1.6;" id="ai-diag-body">
-          Analyzing target connectivity and server response…
-        </div>
-      </div>
-
-      <!-- Step-by-Step Non-Coding Fixes -->
-      <div class="ai-fix-grid">
-        <div class="fix-box">
-          <div class="fix-box-title"><i class="fas fa-shield-alt" style="color:var(--auraxl-dark-teal);"></i> Cloudflare / CDN SSL Fix:</div>
-          <div class="fix-box-desc">
-            1. Log in to your <strong>Cloudflare Dashboard</strong>.<br>
-            2. Go to <strong>SSL/TLS &rarr; Overview</strong>.<br>
-            3. Change encryption mode from <strong>"Full (Strict)"</strong> to <strong>"Full"</strong> or <strong>"Flexible"</strong> so SSL handshakes complete smoothly.
-          </div>
-        </div>
-
-        <div class="fix-box">
-          <div class="fix-box-title"><i class="fas fa-server" style="color:var(--auraxl-orange);"></i> Hostinger / cPanel Server Fix:</div>
-          <div class="fix-box-desc">
-            1. Log in to your <strong>Hosting Control Panel</strong> (Hostinger / cPanel).<br>
-            2. Navigate to <strong>Websites &rarr; SSL</strong>.<br>
-            3. Click <strong>"Reinstall SSL"</strong> and ensure <strong>"Force HTTPS"</strong> is enabled.
-          </div>
-        </div>
-      </div>
-
-      <!-- One-Click Copyable Support Ticket -->
-      <div style="margin-top:1.5rem;">
-        <div style="font-size:0.85rem;font-weight:800;color:var(--auraxl-slate-800);margin-bottom:0.45rem;display:flex;align-items:center;justify-content:space-between;">
-          <span><i class="fas fa-headset" style="color:var(--auraxl-orange);"></i> One-Click Support Ticket (Send to Hostinger/Cloudflare Support)</span>
-          <button class="btn btn-primary copy-btn-floating" onclick="copySupportTicket()" style="font-size:0.72rem;padding:0.3rem 0.75rem;">
-            <i class="fas fa-copy"></i> Copy Support Ticket
-          </button>
-        </div>
-
-        <div class="ticket-console" id="ai-support-ticket-text">Loading support ticket details…</div>
-      </div>
-    </div>
-
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════════════════════
-       SECTION 4: 🔔 NOTIFICATIONS & ALERT CHANNELS
+       SECTION 4: 🔔 NOTIFICATIONS & MULTI-EMAIL CHANNELS
   ═══════════════════════════════════════════════════════════ -->
   <section class="section-pane" id="pane-alerts">
 
     <div class="content-box">
       <div class="box-header">
         <div>
-          <div class="box-title"><i class="fas fa-bell" style="color:var(--auraxl-dark-teal);"></i> Notification Channels &amp; Alert Delivery</div>
-          <div class="box-subtitle">Instant push notifications to your mobile lockscreen &amp; automated HTML incident alerts directly to your inbox.</div>
+          <div class="box-title"><i class="fas fa-bell" style="color:var(--auraxl-dark-teal);"></i> Notification Channels &amp; Multi-Recipient Alerts</div>
+          <div class="box-subtitle">Delivers instant alerts to your mobile device &amp; dispatches automated emails to any and all registered email addresses.</div>
         </div>
       </div>
 
@@ -1334,19 +1121,19 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
         </div>
       </div>
 
-      <!-- Email Channel -->
+      <!-- Multi-Recipient Email Channel -->
       <div class="channel-card">
         <div class="channel-info">
           <div class="channel-icon email"><i class="fas fa-envelope"></i></div>
           <div>
-            <div style="font-size:0.92rem;font-weight:800;color:var(--auraxl-slate-900);">Automated Email Incident Dispatch (SMTP SSL)</div>
-            <div style="font-size:0.78rem;color:var(--auraxl-slate-500);">Sends rich HTML outage reports and root-cause solutions directly to your registered inbox.</div>
+            <div style="font-size:0.92rem;font-weight:800;color:var(--auraxl-slate-900);">Multi-Recipient Email Dispatch (IPv4 SSL)</div>
+            <div style="font-size:0.78rem;color:var(--auraxl-slate-500);">Sends rich HTML outage reports to all added email addresses simultaneously via secure IPv4 SSL.</div>
           </div>
         </div>
 
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
           <button class="btn btn-outline" id="test-email-btn" onclick="sendTestEmail()">
-            <i class="fas fa-paper-plane"></i> Send Test Email
+            <i class="fas fa-paper-plane"></i> Send Test Email to All
           </button>
         </div>
       </div>
@@ -1363,8 +1150,8 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
     <div class="content-box">
       <div class="box-header">
         <div>
-          <div class="box-title"><i class="fas fa-sliders" style="color:var(--auraxl-dark-teal);"></i> Monitoring &amp; Notification Configuration</div>
-          <div class="box-subtitle">Adjust the target website URL, check interval timing, recipient email, and delivery credentials.</div>
+          <div class="box-title"><i class="fas fa-sliders" style="color:var(--auraxl-dark-teal);"></i> Monitoring &amp; Multi-Email Configuration</div>
+          <div class="box-subtitle">Add any email addresses, change the monitored URL, adjust timing interval, or configure SMTP credentials.</div>
         </div>
       </div>
 
@@ -1377,9 +1164,9 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
         </div>
 
         <div class="form-field">
-          <label for="setting-alert-email">Notification Recipient Email</label>
-          <div class="field-hint">The destination email address that receives outage alerts and resolution notices.</div>
-          <input type="email" id="setting-alert-email" class="input-control" placeholder="31pranav104@gmail.com" required />
+          <label for="setting-alert-email">Notification Recipient Email(s)</label>
+          <div class="field-hint">Enter one or multiple email addresses separated by commas (e.g. <code>31pranav104@gmail.com, somwanshipranav495@gmail.com, alert@company.com</code>).</div>
+          <input type="text" id="setting-alert-email" class="input-control" placeholder="31pranav104@gmail.com, somwanshipranav495@gmail.com" required />
         </div>
 
         <div class="form-field">
@@ -1421,7 +1208,7 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
         <!-- Expandable SMTP Credentials -->
         <details class="form-field" style="margin-top:1.5rem;">
           <summary style="font-size:0.82rem;font-weight:800;color:var(--auraxl-dark-teal);cursor:pointer;margin-bottom:0.6rem;">
-            ⚙️ Advanced Email Delivery Credentials (SMTP SSL Configuration)
+            ⚙️ Advanced Email Delivery Credentials (IPv4 SMTP SSL Configuration)
           </summary>
           <div style="background:#F8FAFC;border:1px solid var(--auraxl-slate-200);border-radius:var(--radius-md);padding:1.25rem;margin-top:0.4rem;">
             <div class="form-field">
@@ -1429,7 +1216,7 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
               <input type="text" id="setting-smtp-server" class="input-control" placeholder="smtp.gmail.com" />
             </div>
             <div class="form-field">
-              <label>SMTP Port (SSL / TLS)</label>
+              <label>SMTP Port (SSL)</label>
               <input type="number" id="setting-smtp-port" class="input-control" placeholder="465" />
             </div>
             <div class="form-field">
@@ -1455,19 +1242,19 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
 
 </div>
 
-<!-- ── Mobile Bottom Navigation Bar ── -->
+<!-- Mobile Bottom Navigation Bar -->
 <div class="mobile-bottom-nav">
   <button class="mobile-tab-btn active" onclick="switchTab('overview')">
     <i class="fas fa-chart-pie"></i>
     <span>Overview</span>
   </button>
+  <button class="mobile-tab-btn" onclick="switchTab('timeline')">
+    <i class="fas fa-timeline"></i>
+    <span>Timeline</span>
+  </button>
   <button class="mobile-tab-btn" onclick="switchTab('history')">
     <i class="fas fa-list-check"></i>
     <span>Logs</span>
-  </button>
-  <button class="mobile-tab-btn" onclick="switchTab('diagnostics')">
-    <i class="fas fa-robot"></i>
-    <span>AI Fix</span>
   </button>
   <button class="mobile-tab-btn" onclick="switchTab('alerts')">
     <i class="fas fa-bell"></i>
@@ -1481,7 +1268,7 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   AuraXL Enterprise Frontend Engine & PWA Controller
+   AuraXL Enterprise Controller with Agentic AI & Visual Timeline
 ═══════════════════════════════════════════════════════════════ */
 
 let currentFilter = '';
@@ -1489,16 +1276,16 @@ let currentPage = 1;
 const PAGE_SIZE = 30;
 let latestTelemetryData = null;
 let lastKnownStatus = null;
-let pushAlertsEnabled = true;
 let deferredPrompt = null;
 let _vapidPublicKey = null;
+let lastExecutiveReport = '';
+let lastSupportTicket = '';
 
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
 
-// Check Standalone Mode (Installed PWA vs Browser)
 function checkStandaloneMode() {
   const isReallyStandalone = 
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || 
@@ -1547,35 +1334,33 @@ function executePwaInstall() {
   }
 }
 
-// ── Tab Section Switching Controller ──
+// ── Tab Section Controller ──
 function switchTab(tabId) {
-  // 1. Hide all section panes
   document.querySelectorAll('.section-pane').forEach(p => p.classList.remove('active'));
-  // 2. Show active pane
   const targetPane = document.getElementById(`pane-${tabId}`);
   if (targetPane) targetPane.classList.add('active');
 
-  // 3. Update desktop nav buttons
-  const tabs = ['overview', 'history', 'diagnostics', 'alerts', 'settings'];
+  const tabs = ['overview', 'timeline', 'history', 'alerts', 'settings'];
   const tabIndex = tabs.indexOf(tabId);
-  const deskBtns = document.querySelectorAll('.nav-tab-btn');
-  deskBtns.forEach((b, i) => {
+  document.querySelectorAll('.nav-tab-btn').forEach((b, i) => {
     if (i === tabIndex) b.classList.add('active');
     else b.classList.remove('active');
   });
 
-  // 4. Update mobile bottom nav buttons
-  const mobBtns = document.querySelectorAll('.mobile-tab-btn');
-  mobBtns.forEach((b, i) => {
+  document.querySelectorAll('.mobile-tab-btn').forEach((b, i) => {
     if (i === tabIndex) b.classList.add('active');
     else b.classList.remove('active');
   });
 
-  // Scroll to top smoothly
+  if (tabId === 'timeline') {
+    loadTimeline(24);
+    loadAgentTrends();
+    loadExecutiveReport();
+  }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ── Toast & Custom In-App Modal Dialogs ──
 function showToast(msg) {
   const t = document.getElementById('toast');
   if (t) {
@@ -1610,7 +1395,6 @@ function showInfoCard(title, bodyHtml) {
   document.body.appendChild(overlay);
 }
 
-// ── Audio Chime for WhatsApp-style Popups ──
 function playAlertChime() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1642,7 +1426,7 @@ function closePopup() {
   if (modal) modal.style.display = 'none';
 }
 
-// ── VAPID Web Push Subscription Engine ──
+// ── VAPID Web Push ──
 async function getVapidPublicKey() {
   if (_vapidPublicKey) return _vapidPublicKey;
   try {
@@ -1661,21 +1445,12 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 async function subscribeToPush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    showInfoCard('📱 Not Supported', 'Web Push notifications require a modern browser (Chrome, Edge, or Safari on iOS 16.4+).');
-    return null;
-  }
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
   const vapidKey = await getVapidPublicKey();
-  if (!vapidKey) {
-    showInfoCard('⚙️ Push Not Configured', 'VAPID public key not retrieved from server.');
-    return null;
-  }
+  if (!vapidKey) return null;
   try {
     const perm = await Notification.requestPermission();
-    if (perm !== 'granted') {
-      showInfoCard('🔕 Notifications Blocked', 'Please grant notification permissions in your browser settings to receive alerts.');
-      return null;
-    }
+    if (perm !== 'granted') return null;
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
@@ -1687,14 +1462,11 @@ async function subscribeToPush() {
       body: JSON.stringify(sub.toJSON())
     });
     return sub;
-  } catch(err) {
-    showInfoCard('❌ Subscription Notice', 'Could not register push: ' + err.message);
-    return null;
-  }
+  } catch(err) { return null; }
 }
 
 async function testMobilePopupAlert() {
-  const sub = await subscribeToPush();
+  await subscribeToPush();
   try {
     const res = await fetch('/api/push/test', { method: 'POST' });
     const j = await res.json();
@@ -1710,13 +1482,13 @@ async function testMobilePopupAlert() {
   }
 }
 
-// ── Email Verification Dispatcher ──
+// ── Multi-Recipient Email Dispatcher ──
 async function sendTestEmail() {
   const btn = document.getElementById('test-email-btn');
   const email = document.getElementById('setting-alert-email')?.value.trim() || '31pranav104@gmail.com';
   const orig = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Dispatching to All...`;
 
   try {
     const res = await fetch('/api/settings/test-email', {
@@ -1738,7 +1510,7 @@ async function sendTestEmail() {
   }
 }
 
-// ── Formatting Helpers ──
+// ── Helpers ──
 function fmtTs(ts) {
   if (!ts) return '—';
   const d = new Date(ts);
@@ -1767,13 +1539,11 @@ async function loadStatus() {
 
     latestTelemetryData = d;
 
-    // Detect downtime transitions and fire WhatsApp / push alert
     if (lastKnownStatus && lastKnownStatus === 'up' && d.status === 'down') {
       showPopup(`🚨 <strong>AuraXL Outage Alert</strong><br>Target ${d.target_url} is unreachable (${d.error_message || 'Connection reset'}).`);
     }
     lastKnownStatus = d.status;
 
-    // Update Target URL displays
     if (d.target_url) {
       document.getElementById('hero-target-url').textContent = d.target_url;
       const hLink = document.getElementById('header-target-link');
@@ -1798,9 +1568,6 @@ async function loadStatus() {
     document.getElementById('tele-http').textContent = d.http_status || '—';
     document.getElementById('tele-latency').textContent = d.response_time_ms != null ? `${d.response_time_ms} ms` : '—';
     document.getElementById('tele-last-check-rel').textContent = relativeTime(d.checked_at);
-
-    // Update AI diagnostic tab
-    updateAiDiagnostics(d);
 
   } catch(e){}
 }
@@ -1845,6 +1612,136 @@ async function loadStats() {
     setSla('sla-30d', 'sla-30d-sub', h30);
 
   } catch(e){}
+}
+
+// ── ⏱️ VISUAL STATUS TIMELINE RENDERER ──
+async function loadTimeline(hours = 24, btn = null) {
+  if (btn) {
+    btn.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  const container = document.getElementById('visual-timeline-bar');
+  if (!container) return;
+
+  try {
+    const res = await fetch(`/api/timeline?hours=${hours}&limit=60`);
+    const j = await res.json();
+    const blocks = j.data || [];
+
+    if (blocks.length === 0) {
+      container.innerHTML = '<div style="color:#64748B;font-size:0.75rem;padding:0.4rem;margin:auto;">No telemetry data in this timeline range.</div>';
+      return;
+    }
+
+    container.innerHTML = blocks.map(b => {
+      const t = b.type || (b.status === 'up' ? 'uptime' : 'downtime');
+      const timeStr = fmtTs(b.timestamp);
+      const httpStr = b.http_status ? `HTTP ${b.http_status}` : 'No HTTP';
+      const rtStr = b.response_time_ms ? `${b.response_time_ms}ms` : '';
+      const tooltip = `${timeStr} | ${b.status.toUpperCase()} (${httpStr} ${rtStr}) ${b.error_message || ''}`;
+      
+      return `<div class="timeline-block ${t}" title="${tooltip}" onclick="showTimelineDetail('${b.timestamp}', '${b.status}', '${httpStr}', '${rtStr}', '${(b.error_message||'Normal').replace(/'/g, "\\'")}')"></div>`;
+    }).join('');
+
+  } catch(e){}
+}
+
+function showTimelineDetail(ts, status, http, latency, err) {
+  const box = document.getElementById('timeline-detail-box');
+  if (box) {
+    box.style.display = 'block';
+    box.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-weight:800;color:var(--auraxl-slate-900);"><i class="fas fa-info-circle" style="color:var(--auraxl-dark-teal);"></i> Selected Probe Event</span>
+        <span style="font-size:0.72rem;color:var(--auraxl-slate-500);">${fmtTs(ts)} (${relativeTime(ts)})</span>
+      </div>
+      <div style="margin-top:0.4rem;color:var(--auraxl-slate-700);">
+        Status: <strong style="text-transform:uppercase;">${status}</strong> • Response: <strong>${http}</strong> • Latency: <strong>${latency || '—'}</strong>
+      </div>
+      <div style="font-size:0.75rem;color:var(--auraxl-slate-500);margin-top:0.2rem;">
+        Diagnostic: ${err}
+      </div>
+    `;
+  }
+}
+
+// ── 🤖 AGENTIC AI SUITE CONTROLLERS ──
+async function triggerDeepRecoveryAgent() {
+  const out = document.getElementById('diag-root-cause-summary');
+  if (out) out.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Running deep multi-layer DNS, TCP & SSL handshake probing...`;
+
+  try {
+    const res = await fetch('/api/agent/recovery-diagnosis', { method: 'POST' });
+    const j = await res.json();
+    const d = j.data;
+    if (!d) return;
+
+    document.getElementById('diag-dns-status').textContent = d.layers?.dns?.status || 'PASS';
+    document.getElementById('diag-dns-status').style.color = d.layers?.dns?.status === 'PASS' ? 'var(--status-up)' : 'var(--status-down)';
+
+    document.getElementById('diag-tcp-status').textContent = d.layers?.tcp_port_443?.status || 'PASS';
+    document.getElementById('diag-tcp-status').style.color = d.layers?.tcp_port_443?.status === 'PASS' ? 'var(--status-up)' : 'var(--status-down)';
+
+    document.getElementById('diag-ssl-status').textContent = d.layers?.ssl_tls?.status || 'PASS';
+    document.getElementById('diag-ssl-status').style.color = d.layers?.ssl_tls?.status === 'PASS' ? 'var(--status-up)' : 'var(--status-down)';
+
+    out.innerHTML = `<strong>Autonomous Deduction:</strong> ${d.root_cause}<br><br><strong>Action Plan:</strong><br>${d.action_plan?.join('<br>') || 'None needed.'}`;
+
+    lastSupportTicket = `Subject: Urgent - Outage Diagnosis for ${d.target_url}\n\nHi Support Team,\n\nAuraXL Autonomous AI Agent performed deep multi-probe diagnostics:\n- DNS: ${d.layers?.dns?.details}\n- TCP 443: ${d.layers?.tcp_port_443?.details}\n- SSL/TLS: ${d.layers?.ssl_tls?.details}\n\nRoot Cause: ${d.root_cause}\n\nPlease inspect the origin web server configuration.\n\nThank you!`;
+
+    showToast('🤖 AI Recovery Diagnosis Completed!');
+  } catch(e) {
+    if (out) out.textContent = 'Error executing deep recovery agent.';
+  }
+}
+
+async function loadAgentTrends() {
+  try {
+    const res = await fetch('/api/agent/trends');
+    const j = await res.json();
+    const d = j.data;
+    if (!d) return;
+
+    document.getElementById('trend-health-score').textContent = `${d.health_score} / 100`;
+    document.getElementById('trend-latency-status').textContent = d.latency_trend;
+    document.getElementById('trend-risk-level').textContent = d.degradation_risk;
+    document.getElementById('trend-risk-level').style.color = d.degradation_risk === 'HIGH' ? 'var(--status-down)' : 'var(--status-up)';
+    document.getElementById('trend-summary-text').textContent = d.summary;
+  } catch(e){}
+}
+
+async function loadExecutiveReport() {
+  try {
+    const res = await fetch('/api/agent/executive-report');
+    const j = await res.json();
+    const d = j.data;
+    if (!d) return;
+
+    document.getElementById('report-sla-grade').textContent = d.sla_rating;
+    document.getElementById('report-compliance-status').textContent = d.compliance_status;
+    document.getElementById('report-compliance-status').style.color = d.compliance_status === 'COMPLIANT' ? 'var(--status-up)' : 'var(--status-down)';
+    document.getElementById('report-summary-text').textContent = d.executive_summary;
+
+    lastExecutiveReport = `=== AuraXL Executive Reliability & SLA Audit Report ===\nTarget: ${d.target_url}\nGenerated: ${d.generated_at}\nSLA Rating: ${d.sla_rating}\nCompliance: ${d.compliance_status}\n\nAvailability:\n- Last 24 Hours: ${d.availability?.last_24h}\n- Last 7 Days: ${d.availability?.last_7d}\n- Last 30 Days: ${d.availability?.last_30d}\n- All-Time: ${d.availability?.all_time}\n\nExecutive Summary:\n${d.executive_summary}\n\n======================================================`;
+  } catch(e){}
+}
+
+function copySupportTicket() {
+  const text = lastSupportTicket || `Subject: Urgent - Website Outage on https://auraxl.com\n\nHi Support Team,\n\nOur domain https://auraxl.com is failing HTTPS connections with SSL protocol EOF handshake drop.\n\nPlease inspect SSL certificate and Port 443 web server virtualhost configuration.`;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('📋 Support ticket copied to clipboard!');
+  });
+}
+
+function copyExecutiveReport() {
+  if (lastExecutiveReport) {
+    navigator.clipboard.writeText(lastExecutiveReport).then(() => {
+      showToast('📑 Executive Audit Report copied to clipboard!');
+    });
+  } else {
+    showToast('Please open the timeline window first to generate report.');
+  }
 }
 
 // ── Telemetry History Table Loader ──
@@ -1903,45 +1800,6 @@ function setFilter(btn, st) {
   loadHistory();
 }
 
-// ── AI Diagnostics & Root Cause Engine ──
-function updateAiDiagnostics(d) {
-  const heading = document.getElementById('ai-diag-heading');
-  const body = document.getElementById('ai-diag-body');
-  const ticket = document.getElementById('ai-support-ticket-text');
-  if (!d || !heading || !body) return;
-
-  if (d.status === 'up') {
-    heading.innerHTML = `🟢 Target Website is Reachable &amp; Healthy`;
-    body.innerHTML = `The web origin at <strong>${d.target_url}</strong> answered the latest automated HTTPS check in <strong>${d.response_time_ms}ms</strong> with valid SSL certificates.`;
-    ticket.textContent = `Website ${d.target_url} is currently healthy. No support ticket required.`;
-    return;
-  }
-
-  const errMsg = d.error_message || '';
-  if (errMsg.includes('UNEXPECTED_EOF_WHILE_READING') || errMsg.includes('SSL') || d.error_type === 'connection_error') {
-    heading.innerHTML = `🚨 SSL/TLS Handshake Disconnect (Incident Detected)`;
-    body.innerHTML = `<strong>In Simple Words:</strong> Your domain DNS correctly reaches the server, but the web hosting server is abruptly terminating secure HTTPS handshakes before establishing SSL encryption.`;
-    ticket.textContent = `Subject: Urgent - SSL Handshake drop on ${d.target_url}\n\nHi Support Team,\n\nOur domain ${d.target_url} is failing HTTPS connections with the error:\n[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol.\n\nPlease inspect the SSL certificate installation and web server HTTPS vhost configuration on Port 443 so incoming secure connections are not abruptly reset.\n\nThank you!`;
-  } else if (d.error_type === 'dns_failure') {
-    heading.innerHTML = `⚠️ DNS Resolution Failure`;
-    body.innerHTML = `<strong>In Simple Words:</strong> The domain name cannot be mapped to an IP address. Check registrar A/CNAME records.`;
-    ticket.textContent = `Subject: DNS Resolution failure for ${d.target_url}\n\nHi Support, DNS lookups for ${d.target_url} are failing. Please verify nameserver routing.`;
-  } else {
-    heading.innerHTML = `⚠️ HTTP Response Outage (${d.http_status || 'Network Drop'})`;
-    body.innerHTML = `<strong>In Simple Words:</strong> The server returned an error code <code>${d.http_status || 'Connection Error'}</code>.`;
-    ticket.textContent = `Subject: Website Outage on ${d.target_url}\n\nHi Support, ${d.target_url} is currently returning HTTP ${d.http_status}. Please investigate origin containers.`;
-  }
-}
-
-function copySupportTicket() {
-  const text = document.getElementById('ai-support-ticket-text')?.textContent;
-  if (text) {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('📋 Support ticket copied to clipboard! Ready to paste into Hostinger / Cloudflare chat.');
-    });
-  }
-}
-
 // ── Settings Loader & Saver ──
 async function loadSettings() {
   try {
@@ -1950,7 +1808,7 @@ async function loadSettings() {
     if (j.success && j.data) {
       const d = j.data;
       if (document.getElementById('setting-target-url')) document.getElementById('setting-target-url').value = d.target_url || 'https://auraxl.com';
-      if (document.getElementById('setting-alert-email')) document.getElementById('setting-alert-email').value = d.alert_email || '31pranav104@gmail.com';
+      if (document.getElementById('setting-alert-email')) document.getElementById('setting-alert-email').value = d.alert_email || '31pranav104@gmail.com, somwanshipranav495@gmail.com';
       if (document.getElementById('setting-interval')) document.getElementById('setting-interval').value = d.monitor_interval_minutes || '5';
       if (document.getElementById('setting-email-toggle')) document.getElementById('setting-email-toggle').checked = d.email_alerts_enabled !== 'false';
       if (document.getElementById('setting-push-toggle')) document.getElementById('setting-push-toggle').checked = d.push_alerts_enabled !== 'false';
@@ -2001,7 +1859,7 @@ async function saveSettings(e) {
     });
     const j = await res.json();
     if (j.success) {
-      showToast('✅ Configuration saved successfully!');
+      showToast('✅ Configuration & Email recipients saved successfully!');
       loadAll();
     } else {
       showToast('❌ Error saving settings.');

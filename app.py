@@ -270,6 +270,74 @@ def push_test():
 
 
 
+@app.route("/api/agent/recovery-diagnosis", methods=["GET", "POST"])
+def api_agent_recovery():
+    """Trigger the Agentic Auto-Recovery & Deep Diagnostic Agent."""
+    import ai_agent
+    target_url = request.args.get("target_url") or db.get_setting("target_url", TARGET_URL)
+    result = ai_agent.run_deep_recovery_diagnosis(target_url)
+    return jsonify({"success": True, "data": result})
+
+
+@app.route("/api/agent/trends")
+def api_agent_trends():
+    """Trigger the Agentic Trend & Latency Anomaly Forecast Agent."""
+    import ai_agent
+    result = ai_agent.generate_trend_analytics()
+    return jsonify({"success": True, "data": result})
+
+
+@app.route("/api/agent/executive-report")
+def api_agent_report():
+    """Trigger the Agentic Executive SLA Audit & Report Agent."""
+    import ai_agent
+    result = ai_agent.generate_executive_report()
+    return jsonify({"success": True, "data": result})
+
+
+@app.route("/api/timeline")
+def api_timeline():
+    """Return structured visual timeline blocks (uptime, downtime, degraded, maintenance)."""
+    hours = int(request.args.get("hours", 24))
+    limit = min(int(request.args.get("limit", 100)), 150)
+    checks = db.get_checks(limit=limit, page=1)
+    
+    # Reverse so oldest is first
+    chronological = list(reversed(checks)) if checks else []
+    
+    timeline_blocks = []
+    for c in chronological:
+        st = c.get("status", "unknown")
+        # Check if error indicates scheduled maintenance or downtime
+        err_msg = c.get("error_message") or ""
+        if "maintenance" in err_msg.lower():
+            segment_type = "maintenance"
+        elif st == "up":
+            segment_type = "uptime"
+        elif st == "degraded":
+            segment_type = "degraded"
+        else:
+            segment_type = "downtime"
+            
+        timeline_blocks.append({
+            "id": c.get("id"),
+            "timestamp": c.get("checked_at"),
+            "status": st,
+            "type": segment_type,
+            "http_status": c.get("http_status"),
+            "response_time_ms": c.get("response_time_ms"),
+            "error_message": c.get("error_message")
+        })
+        
+    return jsonify({
+        "success": True,
+        "hours": hours,
+        "total_segments": len(timeline_blocks),
+        "data": timeline_blocks
+    })
+
+
+
 @app.route("/api/checks")
 def api_checks():
     """
