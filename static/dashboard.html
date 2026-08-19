@@ -1589,7 +1589,7 @@ async function runSmtpHealthCheck() {
   const resultBox = document.getElementById('smtp-health-result');
   const orig = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Diagnosing...`;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Diagnosing Network...`;
   resultBox.style.display = 'none';
   resultBox.innerHTML = '';
 
@@ -1598,30 +1598,88 @@ async function runSmtpHealthCheck() {
     const j = await res.json();
     const d = j.diagnostic || {};
 
-    const statusIcon  = d.overall_status === 'PASS' ? '✅' : '❌';
-    const authStatus  = d.auth?.status === 'PASS' ? `✅ Auth OK (${d.auth.method})` : `❌ ${d.auth?.error || 'Auth failed'}`;
-    const dnsStatus   = d.dns?.status === 'PASS' ? `✅ Resolved ${(d.dns.resolved_ips||[]).join(', ')} (${d.dns.latency_ms}ms)` : `❌ ${d.dns?.error}`;
-    const port465 = d.ports?.['465']?.status === 'PASS' ? `✅ Open (${d.ports['465'].latency_ms}ms)` : `❌ ${d.ports?.['465']?.error || 'Blocked'}`;
-    const port587 = d.ports?.['587']?.status === 'PASS' ? `✅ Open (${d.ports['587'].latency_ms}ms)` : `❌ ${d.ports?.['587']?.error || 'Blocked'}`;
+    // DNS status
+    const dnsOk  = d.dns?.status === 'PASS';
+    const dnsText = dnsOk
+      ? `<span style="color:#059669">&#x2705; Resolved → ${(d.dns.resolved_ips||[]).join(', ')} (${d.dns.latency_ms}ms)</span>`
+      : `<span style="color:#DC2626">&#x274C; Failed: ${d.dns?.error || 'Unknown'}</span>`;
 
-    resultBox.innerHTML = `
-      <div style="font-weight:800;margin-bottom:0.4rem;">${statusIcon} SMTP Health: <span style="color:${d.overall_status==='PASS'?'#059669':'#DC2626'}">${d.overall_status}</span></div>
-      <div><b>Host:</b> ${d.host}</div>
-      <div><b>DNS:</b> ${dnsStatus}</div>
-      <div><b>Port 465 (SSL):</b> ${port465}</div>
-      <div><b>Port 587 (STARTTLS):</b> ${port587}</div>
-      <div><b>Authentication:</b> ${authStatus}</div>
-      ${d.overall_status !== 'PASS' ? `<div style="margin-top:0.5rem;color:#DC2626;font-weight:600;">⚠️ Email delivery may be blocked. Check SMTP credentials or try a different port.</div>` : ''}
-    `;
+    // Port status helper
+    function portText(p) {
+      const ps = d.ports?.[p] || {};
+      if (ps.status === 'PASS') return `<span style="color:#059669">&#x2705; Open (${ps.latency_ms}ms)</span>`;
+      if (ps.status === 'TIMEOUT') return `<span style="color:#DC2626">&#x23F1; Timed Out — blocked by hosting firewall</span>`;
+      return `<span style="color:#DC2626">&#x274C; ${ps.error || 'Unreachable'}</span>`;
+    }
+
+    // Auth status — must show SKIPPED correctly when ports are all blocked
+    let authText;
+    if (d.auth?.status === 'PASS') {
+      authText = `<span style="color:#059669">&#x2705; Authenticated (${d.auth.method})</span>`;
+    } else if (d.auth?.status === 'SKIPPED') {
+      authText = `<span style="color:#F59E0B">&#x23ED; Skipped — cannot test authentication while SMTP ports are blocked. This is NOT a credentials issue.</span>`;
+    } else if (d.auth?.status === 'FAIL_AUTH') {
+      authText = `<span style="color:#DC2626">&#x274C; ${d.auth.error}</span>`;
+    } else {
+      authText = `<span style="color:#DC2626">&#x274C; ${d.auth?.error || 'Unknown'}</span>`;
+    }
+
+    // Resend reachability
+    const resendOk   = d.resend_reachability?.status === 'PASS';
+    const resendText = resendOk
+      ? `<span style="color:#059669">&#x2705; api.resend.com reachable over HTTPS</span>`
+      : `<span style="color:#DC2626">&#x274C; api.resend.com not reachable</span>`;
+
+    // Delivery mode banner
+    const isBlocked = d.overall_status === 'SMTP_BLOCKED';
+    const isPass    = d.overall_status === 'PASS';
+    const modeColor = isPass ? '#059669' : (isBlocked ? '#D97706' : '#DC2626');
+    const modeLabel = isPass ? 'SMTP Healthy' : (isBlocked ? 'SMTP Ports Blocked — Use Resend HTTPS API' : d.overall_status);
+
+    let html = `
+      <div style="font-weight:800;font-size:0.88rem;margin-bottom:0.6rem;color:${modeColor}">${modeLabel}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.77rem;line-height:1.7">
+        <tr><td style="width:38%;color:#475569;font-weight:600;padding:2px 0">DNS Resolution</td><td>${dnsText}</td></tr>
+        <tr><td style="color:#475569;font-weight:600;padding:2px 0">Port 465 (SSL)</td><td>${portText('465')}</td></tr>
+        <tr><td style="color:#475569;font-weight:600;padding:2px 0">Port 587 (STARTTLS)</td><td>${portText('587')}</td></tr>
+        <tr><td style="color:#475569;font-weight:600;padding:2px 0">Authentication</td><td>${authText}</td></tr>
+        <tr><td style="color:#475569;font-weight:600;padding:2px 0">Resend HTTPS API</td><td>${resendText}</td></tr>
+        <tr><td style="color:#475569;font-weight:600;padding:2px 0">Delivery Mode</td>
+            <td><span style="color:#3B82F6;font-weight:600">${d.resend_configured ? 'Resend HTTPS API (active)' : 'SMTP (active)'}</span></td></tr>
+      </table>`;
+
+    if (isBlocked && resendOk) {
+      html += `
+      <div style="margin-top:0.75rem;background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:0.75rem;font-size:0.77rem">
+        <div style="font-weight:800;color:#92400E;margin-bottom:0.3rem">&#x26A0; Fix Required: SMTP ports are blocked by your hosting provider</div>
+        <div style="color:#78350F;line-height:1.6">
+          <b>Solution:</b> Add a free <b>RESEND_API_KEY</b> to Render environment variables.<br>
+          1. Go to <a href="https://resend.com/signup" target="_blank" style="color:#2563EB">resend.com/signup</a> (free: 3,000 emails/month)<br>
+          2. Create an API key (API Keys → Create)<br>
+          3. In Render dashboard → Your Service → <b>Environment</b> → Add variable:<br>
+          &nbsp;&nbsp;<code style="background:#FEF9C3;padding:1px 4px;border-radius:3px">RESEND_API_KEY = re_xxxxxxxxxxxxxxxx</code><br>
+          4. Redeploy the service.<br>
+          5. Emails will then route via HTTPS (port 443) — bypassing all SMTP restrictions.
+        </div>
+      </div>`;
+    }
+
+    if (isPass) {
+      html += `<div style="margin-top:0.5rem;color:#059669;font-weight:600">Email delivery is healthy. Test email should work correctly.</div>`;
+    }
+
+    resultBox.innerHTML = html;
     resultBox.style.display = 'block';
 
-    if (d.overall_status === 'PASS') {
-      showToast('✅ SMTP is healthy! Email delivery should work correctly.');
+    if (isPass) {
+      showToast('&#x2705; SMTP is healthy! Email delivery is working.');
+    } else if (isBlocked) {
+      showToast('&#x26A0; SMTP ports blocked. See the fix instructions in the health panel.');
     } else {
-      showToast('❌ SMTP health check failed. Check the diagnostic panel below.');
+      showToast('&#x274C; Email health check failed. See details below.');
     }
   } catch(e) {
-    resultBox.innerHTML = `<span style="color:#DC2626;">❌ Failed to reach server: ${e.message}</span>`;
+    resultBox.innerHTML = `<span style="color:#DC2626">&#x274C; Failed to reach server: ${e.message}</span>`;
     resultBox.style.display = 'block';
   } finally {
     btn.disabled = false;
