@@ -196,33 +196,49 @@ def update_settings():
 
 @app.route("/api/settings/test-email", methods=["POST"])
 def test_email_alert():
-    """Send an immediate test email alert to verify SMTP delivery to any provided recipient."""
-    from email_notifier import send_outage_email
+    """Send a test email alert. Recipient must be explicitly provided — no hardcoded fallback."""
+    from email_notifier import send_outage_email, parse_recipients
     data = request.get_json() or {}
-    recipient = data.get("email", "").strip() or db.get_setting("alert_email", "").strip()
+    recipient = data.get("email", "").strip()
     target_url = db.get_setting("target_url", "https://auraxl.com")
-    
+
     if not recipient:
         return jsonify({
             "success": False,
-            "message": "Recipient email address is required. Please enter a valid email address."
+            "message": "Recipient email address is required. Please enter a valid email in the Settings tab."
         }), 400
-    
-    log.info("[API] Dispatching test email alert to recipient(s): %s", recipient)
-    
+
+    validated = parse_recipients(recipient)
+    if not validated:
+        return jsonify({
+            "success": False,
+            "message": f"Invalid email format: '{recipient}'. Please enter a properly formatted email address."
+        }), 400
+
+    log.info("[API] Dispatching test email to: %s", recipient)
+
     success, msg = send_outage_email(
         target_url=target_url,
         error_type="TEST VERIFICATION ALERT",
-        error_message="This is a test notification confirming that AuraXL 24/7 Uptime Guardian email alerts are functioning correctly.",
+        error_message="This is an automated verification confirming AuraXL 24/7 Uptime Guardian email alerts are active and working.",
         response_time_ms=120,
         recipient=recipient
     )
-    
+
     return jsonify({
         "success": success,
         "message": msg,
         "recipient": recipient
     })
+
+
+@app.route("/api/settings/smtp-health", methods=["GET"])
+def smtp_health_check():
+    """Run a deep SMTP network diagnostic: DNS → TCP ports → SSL → Auth. Safe: never logs passwords."""
+    from email_notifier import diagnose_smtp_connection
+    log.info("[API] Running SMTP health diagnostic...")
+    diag = diagnose_smtp_connection()
+    return jsonify({"success": True, "diagnostic": diag})
 
 
 

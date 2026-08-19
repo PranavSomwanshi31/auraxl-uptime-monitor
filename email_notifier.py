@@ -1,14 +1,16 @@
 """
-email_notifier.py — Automated Email Alert Engine for AuraXL Uptime Monitor.
+email_notifier.py — Enterprise Automated Email Engine for AuraXL Uptime Monitor.
 
 Features:
-  - Multi-recipient dispatch (supports comma, semicolon, space, or newline-separated email lists).
-  - IPv4 forced connection architecture (eliminates [Errno 101] Network is unreachable).
-  - Dual-port fallback (Port 465 SSL first, fallback to Port 587 STARTTLS).
+  - Multi-recipient dynamic dispatch (RFC 5322 validation, comma/semicolon/space-separated).
+  - Multi-port IPv4 fallback: Port 465 (SSL) -> Port 587 (STARTTLS) -> Port 2525 (Alternative).
+  - Deep connection diagnosis & network health checking.
+  - Safe error logging without exposing credentials or passwords.
 """
 
 import os
 import re
+import time
 import smtplib
 import socket
 import ssl
@@ -20,20 +22,22 @@ import db
 
 log = logging.getLogger(__name__)
 
-DEFAULT_SMTP_USER = "somwanshipranav495@gmail.com"
-DEFAULT_SMTP_PASS = "yvbkynezngoxgqfy"
+DEFAULT_SMTP_SERVER = "smtp.gmail.com"
+DEFAULT_SMTP_USER   = "somwanshipranav495@gmail.com"
+DEFAULT_SMTP_PASS   = "yvbkynezngoxgqfy"
 
 
 def parse_recipients(addr_string: str) -> list:
-    """Extract all valid email addresses from any delimiter string."""
+    """Extract and validate all email addresses from a delimiter string."""
     if not addr_string:
         return []
-    # Split on commas, semicolons, spaces, newlines
     raw_tokens = re.split(r'[,;\s\n\r]+', addr_string.strip())
     valid_emails = []
+    # RFC 5322 simplified email pattern
+    pattern = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
     for token in raw_tokens:
         clean = token.strip()
-        if clean and '@' in clean and '.' in clean:
+        if clean and pattern.match(clean):
             if clean not in valid_emails:
                 valid_emails.append(clean)
     return valid_emails
@@ -42,13 +46,106 @@ def parse_recipients(addr_string: str) -> list:
 def get_smtp_config():
     """Reads SMTP configuration from DB settings first, then environment / defaults."""
     return {
-        "server": db.get_setting("smtp_server", os.environ.get("SMTP_SERVER", "smtp.gmail.com")),
+        "server": db.get_setting("smtp_server", os.environ.get("SMTP_SERVER", DEFAULT_SMTP_SERVER)).strip(),
         "port": int(db.get_setting("smtp_port", os.environ.get("SMTP_PORT", "465"))),
-        "user": db.get_setting("smtp_user", os.environ.get("SMTP_USER", DEFAULT_SMTP_USER)),
-        "password": db.get_setting("smtp_password", os.environ.get("SMTP_PASSWORD", DEFAULT_SMTP_PASS)),
-        "alert_email": db.get_setting("alert_email", os.environ.get("ALERT_EMAIL", "")),
+        "user": db.get_setting("smtp_user", os.environ.get("SMTP_USER", DEFAULT_SMTP_USER)).strip(),
+        "password": db.get_setting("smtp_password", os.environ.get("SMTP_PASSWORD", DEFAULT_SMTP_PASS)).strip(),
+        "alert_email": db.get_setting("alert_email", os.environ.get("ALERT_EMAIL", "")).strip(),
         "enabled": db.get_setting("email_alerts_enabled", os.environ.get("EMAIL_ALERTS_ENABLED", "true")).lower() == "true"
     }
+
+
+def diagnose_smtp_connection(host: str = None, user: str = None, password: str = None) -> dict:
+    """
+    Performs a deep 4-step network and SMTP diagnostic without logging secrets:
+      1. DNS Resolution
+      2. TCP Reachability (Ports 465, 587, 2525)
+      3. SSL/TLS Handshake
+      4. SMTP Authentication
+    """
+    cfg = get_smtp_config()
+    server_host = host or cfg["server"]
+    smtp_user = user or cfg["user"]
+    smtp_pass = (password or cfg["password"]).replace(" ", "")
+
+    diag = {
+        "host": server_host,
+        "sender": smtp_user,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "dns": {},
+        "ports": {},
+        "auth": {},
+        "recommended_port": 465,
+        "overall_status": "UNKNOWN"
+    }
+
+    # Step 1: DNS Resolution
+    t0 = time.perf_counter()
+    try:
+        addr_info = socket.getaddrinfo(server_host, 465, socket.AF_INET, socket.SOCK_STREAM)
+        ips = [x[4][0] for x in addr_info]
+        diag["dns"] = {
+            "status": "PASS",
+            "resolved_ips": ips,
+            "latency_ms": round((time.perf_counter() - t0) * 1000)
+        }
+        log.info("[SMTP Diag] DNS resolved for %s: %s", server_host, ips)
+    except Exception as e:
+        diag["dns"] = {"status": "FAIL", "error": str(e)}
+        diag["overall_status"] = "FAIL_DNS"
+        log.error("[SMTP Diag] DNS resolution failed for %s: %s", server_host, e)
+        return diag
+
+    # Step 2: Port Checks (465 SSL, 587 STARTTLS, 2525)
+    for p in [465, 587, 2525]:
+        t0 = time.perf_counter()
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(5.0)
+            sock.connect((server_host, p))
+            sock.close()
+            t_ms = round((time.perf_counter() - t0) * 1000)
+            diag["ports"][str(p)] = {"status": "PASS", "latency_ms": t_ms}
+            log.info("[SMTP Diag] TCP Port %d is REACHABLE (%dms)", p, t_ms)
+        except Exception as e:
+            diag["ports"][str(p)] = {"status": "FAIL", "error": str(e)}
+            log.warning("[SMTP Diag] TCP Port %d is UNREACHABLE: %s", p, e)
+
+    # Step 3 & 4: SSL/TLS Connection & Authentication
+    if diag["ports"].get("465", {}).get("status") == "PASS":
+        try:
+            with smtplib.SMTP_SSL(server_host, 465, timeout=10) as server:
+                code, resp = server.login(smtp_user, smtp_pass)
+                diag["auth"] = {"status": "PASS", "method": "Port 465 SSL", "code": code}
+                diag["overall_status"] = "PASS"
+                diag["recommended_port"] = 465
+                log.info("[SMTP Diag] Authentication SUCCESS via Port 465 SSL")
+                return diag
+        except smtplib.SMTPAuthenticationError as e:
+            diag["auth"] = {"status": "FAIL_AUTH", "error": "Invalid email or Google App Password"}
+            diag["overall_status"] = "FAIL_AUTH"
+            log.error("[SMTP Diag] Authentication failed: %s", e)
+            return diag
+        except Exception as e:
+            diag["auth"] = {"status": "FAIL_CONNECT", "error": str(e)}
+            log.warning("[SMTP Diag] Port 465 auth check error: %s", e)
+
+    if diag["ports"].get("587", {}).get("status") == "PASS":
+        try:
+            with smtplib.SMTP(server_host, 587, timeout=10) as server:
+                server.starttls()
+                code, resp = server.login(smtp_user, smtp_pass)
+                diag["auth"] = {"status": "PASS", "method": "Port 587 STARTTLS", "code": code}
+                diag["overall_status"] = "PASS"
+                diag["recommended_port"] = 587
+                log.info("[SMTP Diag] Authentication SUCCESS via Port 587 STARTTLS")
+                return diag
+        except Exception as e:
+            diag["auth"] = {"status": "FAIL", "error": str(e)}
+            log.warning("[SMTP Diag] Port 587 auth check error: %s", e)
+
+    diag["overall_status"] = "BLOCKED_NETWORK" if all(v.get("status") == "FAIL" for v in diag["ports"].values()) else "FAIL"
+    return diag
 
 
 def connect_smtp_ipv4(host: str, port: int, timeout: int = 12):
@@ -59,7 +156,6 @@ def connect_smtp_ipv4(host: str, port: int, timeout: int = 12):
     """
     last_err = None
     try:
-        # Query only IPv4 (AF_INET)
         addr_info = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
         for res in addr_info:
             af, socktype, proto, canonname, sa = res
@@ -91,7 +187,7 @@ def connect_smtp_ipv4(host: str, port: int, timeout: int = 12):
     except Exception as e:
         last_err = e
 
-    # Fallback to standard connection if custom socket mapping encounters an edge-case
+    # Fallback standard
     if port == 465:
         return smtplib.SMTP_SSL(host, port, timeout=timeout)
     else:
@@ -102,21 +198,22 @@ def connect_smtp_ipv4(host: str, port: int, timeout: int = 12):
 
 def send_outage_email(target_url: str, error_type: str, error_message: str, response_time_ms: int = None, recipient: str = None) -> tuple:
     """
-    Dispatches a branded HTML email alert to all configured recipient addresses.
+    Dispatches a branded HTML email alert to all dynamic recipient addresses.
     Supports single or multiple comma-separated emails.
     Returns (success: bool, message: str).
     """
     cfg = get_smtp_config()
 
     if not cfg["enabled"]:
-        log.info("[Email] Alerts disabled in settings.")
+        log.info("[Email] Alerts are disabled in Settings.")
         return False, "Email alerts are disabled in Settings."
 
-    raw_recipients = recipient or cfg["alert_email"]
+    raw_recipients = recipient if recipient is not None else cfg["alert_email"]
     recipient_list = parse_recipients(raw_recipients)
 
     if not recipient_list:
-        return False, "No valid recipient email address(es) configured."
+        log.warning("[Email] No valid recipient email address found in: %r", raw_recipients)
+        return False, "No valid recipient email address entered. Please provide a valid email format."
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     is_test = "TEST" in str(error_type).upper()
@@ -158,7 +255,7 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
         <div class="content">
           <span class="badge">{'STATUS: SYSTEM OPERATIONAL' if is_test else 'STATUS: DOWN / INCIDENT'}</span>
           <p style="font-size: 15px; line-height: 1.5; color: #e2e8f0;">
-            {'This is an automated verification email confirming that AuraXL incident notifications are fully active and connected.' if is_test else f'AuraXL 24/7 Monitoring detected that <strong>{target_url}</strong> is currently unreachable or rejecting connections.'}
+            {'This is an automated verification email confirming that AuraXL incident notifications are active and successfully delivered to your inbox.' if is_test else f'AuraXL 24/7 Monitoring detected that <strong>{target_url}</strong> is currently unreachable or rejecting connections.'}
           </p>
           <div class="metric-box">
             <div class="metric-row">
@@ -166,7 +263,7 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
               <span class="metric-val">{target_url}</span>
             </div>
             <div class="metric-row">
-              <span class="metric-label">Alert Recipients:</span>
+              <span class="metric-label">Alert Recipient(s):</span>
               <span class="metric-val">{recipients_display}</span>
             </div>
             <div class="metric-row">
@@ -202,20 +299,33 @@ def send_outage_email(target_url: str, error_type: str, error_message: str, resp
     msg["To"] = ", ".join(recipient_list)
     msg.attach(MIMEText(html_body, "html"))
 
-    ports_to_try = [465, 587]
+    ports_to_try = [465, 587, 2525]
     last_err = None
 
     for port in ports_to_try:
         try:
+            log.info("[Email] Attempting dispatch to [%s] via %s:%d", recipients_display, cfg["server"], port)
             server = connect_smtp_ipv4(cfg["server"], port, timeout=12)
             server.login(user, password)
             server.sendmail(user, recipient_list, msg.as_string())
             server.quit()
             log.info("[Email] Outage alert sent successfully to %s via Port %d", recipients_display, port)
             return True, f"Email delivered successfully to {recipients_display}!"
+        except smtplib.SMTPAuthenticationError as auth_err:
+            log.error("[Email] SMTP Authentication failed: %s", auth_err)
+            return False, "SMTP Authentication Failed: Please check your Gmail address and 16-character Google App Password in Settings."
         except Exception as e:
             last_err = e
             log.warning("[Email] Port %d delivery attempt failed: %s", port, e)
 
-    log.error("[Email] All SMTP delivery attempts failed: %s", last_err)
-    return False, f"SMTP Error: {str(last_err)}"
+    log.error("[Email] All SMTP delivery attempts to %s failed: %s", recipients_display, last_err)
+    
+    err_msg = str(last_err)
+    if "101" in err_msg or "unreachable" in err_msg.lower():
+        user_friendly_msg = "Network Error: Outbound SMTP connection is restricted by the cloud hosting firewall. Please check SMTP host and port."
+    elif "timeout" in err_msg.lower() or "timed out" in err_msg.lower():
+        user_friendly_msg = "Connection Timeout: Unable to reach SMTP server on ports 465/587. Please verify server internet routing."
+    else:
+        user_friendly_msg = f"SMTP Error: {err_msg}"
+        
+    return False, user_friendly_msg

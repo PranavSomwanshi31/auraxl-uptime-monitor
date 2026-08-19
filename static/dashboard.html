@@ -1194,9 +1194,13 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
 
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
           <button class="btn btn-outline" id="test-email-btn" onclick="sendTestEmail()">
-            <i class="fas fa-paper-plane"></i> Send Test Email to All
+            <i class="fas fa-paper-plane"></i> Send Test Email
+          </button>
+          <button class="btn btn-outline" id="smtp-health-btn" onclick="runSmtpHealthCheck()" title="Diagnose SMTP network connectivity">
+            <i class="fas fa-stethoscope"></i> Check SMTP Health
           </button>
         </div>
+        <div id="smtp-health-result" style="display:none;margin-top:0.75rem;font-size:0.78rem;background:#F8FAFC;border:1px solid var(--auraxl-slate-200);border-radius:var(--radius-md);padding:0.75rem 1rem;"></div>
       </div>
     </div>
 
@@ -1573,6 +1577,52 @@ async function sendTestEmail() {
     }
   } catch(e) {
     showToast('❌ Error contacting server.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+
+// ── SMTP Network Health Diagnostic ──
+async function runSmtpHealthCheck() {
+  const btn = document.getElementById('smtp-health-btn');
+  const resultBox = document.getElementById('smtp-health-result');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Diagnosing...`;
+  resultBox.style.display = 'none';
+  resultBox.innerHTML = '';
+
+  try {
+    const res = await fetch('/api/settings/smtp-health');
+    const j = await res.json();
+    const d = j.diagnostic || {};
+
+    const statusIcon  = d.overall_status === 'PASS' ? '✅' : '❌';
+    const authStatus  = d.auth?.status === 'PASS' ? `✅ Auth OK (${d.auth.method})` : `❌ ${d.auth?.error || 'Auth failed'}`;
+    const dnsStatus   = d.dns?.status === 'PASS' ? `✅ Resolved ${(d.dns.resolved_ips||[]).join(', ')} (${d.dns.latency_ms}ms)` : `❌ ${d.dns?.error}`;
+    const port465 = d.ports?.['465']?.status === 'PASS' ? `✅ Open (${d.ports['465'].latency_ms}ms)` : `❌ ${d.ports?.['465']?.error || 'Blocked'}`;
+    const port587 = d.ports?.['587']?.status === 'PASS' ? `✅ Open (${d.ports['587'].latency_ms}ms)` : `❌ ${d.ports?.['587']?.error || 'Blocked'}`;
+
+    resultBox.innerHTML = `
+      <div style="font-weight:800;margin-bottom:0.4rem;">${statusIcon} SMTP Health: <span style="color:${d.overall_status==='PASS'?'#059669':'#DC2626'}">${d.overall_status}</span></div>
+      <div><b>Host:</b> ${d.host}</div>
+      <div><b>DNS:</b> ${dnsStatus}</div>
+      <div><b>Port 465 (SSL):</b> ${port465}</div>
+      <div><b>Port 587 (STARTTLS):</b> ${port587}</div>
+      <div><b>Authentication:</b> ${authStatus}</div>
+      ${d.overall_status !== 'PASS' ? `<div style="margin-top:0.5rem;color:#DC2626;font-weight:600;">⚠️ Email delivery may be blocked. Check SMTP credentials or try a different port.</div>` : ''}
+    `;
+    resultBox.style.display = 'block';
+
+    if (d.overall_status === 'PASS') {
+      showToast('✅ SMTP is healthy! Email delivery should work correctly.');
+    } else {
+      showToast('❌ SMTP health check failed. Check the diagnostic panel below.');
+    }
+  } catch(e) {
+    resultBox.innerHTML = `<span style="color:#DC2626;">❌ Failed to reach server: ${e.message}</span>`;
+    resultBox.style.display = 'block';
   } finally {
     btn.disabled = false;
     btn.innerHTML = orig;
